@@ -1,0 +1,101 @@
+name: "Terraform"
+on: workflow_dispatch
+  # push:
+  #   branches:
+  #   - master
+  #   paths:
+  #   - deployments/terraform/**
+  # pull_request:
+  #   paths:
+  #   - deployments/terraform/**
+jobs:
+  terraform:
+    name: "Terraform"
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v2
+    - name: Setup Terraform
+      uses: hashicorp/setup-terraform@v1
+      with:
+        terraform_version: 1.1.2
+    - name: Terraform Format
+      id: fmt
+      run: |-
+        terraform \
+          -chdir="deployments/terraform" fmt \
+          -check
+    - name: Terraform Init
+      id: init
+      run: |-
+        terraform \
+          -chdir="deployments/terraform" init \
+          -var-file="env-vars/project.tfvars" \
+          -var-file="env-vars/project-prd.tfvars"
+      env:
+        AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        AWS_DEFAULT_REGION: ${{ secrets.AWS_DEFAULT_REGION }}
+    - name: Terraform Validate
+      id: validate
+      run: |-
+        terraform -chdir="deployments/terraform" validate \
+          -no-color
+    - name: Terraform Plan
+      id: plan
+      if: github.event_name == 'pull_request'
+      run: |-
+        terraform -chdir="deployments/terraform" plan \
+          -no-color \
+          -var-file env-vars/project.tfvars \
+          -var-file env-vars/project-prd.tfvars
+      continue-on-error: true
+      env:
+        AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        AWS_DEFAULT_REGION: ${{ secrets.AWS_DEFAULT_REGION }}
+    - uses: actions/github-script@0.9.0
+      if: github.event_name == 'pull_request'
+      env:
+        PLAN: "terraform\n${{ steps.plan.outputs.stdout }}"
+      with:
+        github-token: ${{ secrets.GITHUB_TOKEN }}
+        script: |
+          const output = `#### Terraform Format and Style 🖌\`${{ steps.fmt.outcome }}\`
+          #### Terraform Initialization ⚙️\`${{ steps.init.outcome }}\`
+          #### Terraform Validation 🤖\`${{ steps.validate.outcome }}\`
+          #### Terraform Plan 📖\`${{ steps.plan.outcome }}\`
+
+          <details><summary>Show Plan</summary>
+
+          \`\`\`\n
+          ${process.env.PLAN}
+          \`\`\`
+
+          </details>
+
+          *Pusher: @${{ github.actor }}, Action: \`${{ github.event_name }}\`*`;
+
+          github.issues.createComment({
+            issue_number: context.issue.number,
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            body: output
+          })
+    - name: Terraform Plan Status
+      if: steps.plan.outcome == 'failure'
+      run: exit 1
+    - name: Terraform Apply
+      id: apply
+      if: github.ref == 'refs/heads/master' && (github.event_name == 'push' || github.event_name == 'workflow_dispatch')
+      run: |-
+        terraform -chdir="deployments/terraform" apply \
+          -auto-approve \
+          -no-color \
+          -var-file env-vars/project.tfvars \
+          -var-file env-vars/project-prd.tfvars
+      env:
+        AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        AWS_DEFAULT_REGION: ${{ secrets.AWS_DEFAULT_REGION }}
+        GITHUB_TOKEN: ${{ secrets.TERRAFORM_GITHUB_TOKEN }}

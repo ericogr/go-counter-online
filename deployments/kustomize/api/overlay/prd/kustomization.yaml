@@ -1,0 +1,10 @@
+---
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+namespace: go-counter-online
+bases:
+- ../../base
+images:
+- name: go-counter-online
+  newName: 043934856969.dkr.ecr.us-east-2.amazonaws.com/go-counter-online/api
+  newTag: d2e9d7f

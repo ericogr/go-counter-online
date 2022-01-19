@@ -1,0 +1,60 @@
+name: "Docker CI"
+on: workflow_dispatch
+  # push:
+  #   branches:
+  #   - master
+  #   paths:
+  #   - app/**
+  # pull_request:
+  #   paths:
+  #   - app/**
+jobs:
+  docker_ci_cd:
+    name: "Docker CI/CD"
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v2
+    - name: Login to ECR Container Registry
+      uses: docker/login-action@v1 
+      with:
+        registry: ${{ secrets.AWS_ECR_API_ENDPOINT }}
+        username: 'AWS'
+        password: ${{ secrets.AWS_ECR_API_PASSWORD }}
+    - name: Set outputs
+      id: vars
+      run: echo "::set-output name=sha_short::$(git rev-parse --short HEAD)"
+    - name: Build and push
+      uses: docker/build-push-action@v2
+      with:
+        context: app
+        platforms: linux/amd64
+        push: true
+        tags: |
+          ${{ secrets.AWS_ECR_API_IMAGE_NAME }}:latest
+          ${{ secrets.AWS_ECR_API_IMAGE_NAME }}:${{ steps.vars.outputs.sha_short }}
+    - name: Update Image Name
+      id: update_image_name
+      run: |-
+        sed "s#newName:.*#newName: ${AWS_ECR_API_IMAGE_NAME}#g" \
+          deployments/kustomize/api/overlay/prd/kustomization.yaml >\
+          deployments/kustomize/api/overlay/prd/kustomization.yaml.bak
+        mv deployments/kustomize/api/overlay/prd/kustomization.yaml.bak \
+          deployments/kustomize/api/overlay/prd/kustomization.yaml
+      env:
+        AWS_ECR_API_IMAGE_NAME: ${{ secrets.AWS_ECR_API_IMAGE_NAME }}
+    - name: Update Image Tag
+      id: update_image_tag
+      run: |-
+        sed "s#newTag:.*#newTag: ${SHA_SHORT}#g" \
+          deployments/kustomize/api/overlay/prd/kustomization.yaml >\
+          deployments/kustomize/api/overlay/prd/kustomization.yaml.bak
+        mv deployments/kustomize/api/overlay/prd/kustomization.yaml.bak \
+          deployments/kustomize/api/overlay/prd/kustomization.yaml
+      env:
+        SHA_SHORT: ${{ steps.vars.outputs.sha_short }}
+    - name: Commit image changes
+      uses: stefanzweifel/git-auto-commit-action@v4
+      with:
+        commit_message: 'fix(cd): Automated Change (update kustomization image tag)'
+        file_pattern: deployments/kustomize/api/overlay/prd/kustomization.yaml
