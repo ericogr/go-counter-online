@@ -1,14 +1,13 @@
 package main
 
 import (
-	"flag"
 	"fmt"
 	"log"
 	"net/http"
 
-	"github.com/ericogr/go-counter-online/core"
 	"github.com/ericogr/go-counter-online/routes"
 	"github.com/gorilla/mux"
+	"github.com/spf13/viper"
 )
 
 var (
@@ -20,22 +19,34 @@ var (
 func init() {
 	fmt.Printf("Initializing...\n")
 
-	port := flag.Int("port", 8080, "app port to listen connections")
-	datastore := flag.String("datastore", "memory", "datastore name (memory | postgresql)")
-	extraParams := flag.String("extra-params", "", "extra parameters")
-	hideExtraParams := flag.Bool("hide-extra-params", false, "hide extra parameters")
-	flag.Parse()
+	viper.SetDefault("Port", 8080)
+	viper.SetDefault("Database", "memory")
+	viper.SetDefault("DatabaseConfiguration", "")
+	viper.SetDefault("HideDatabaseConfigurationOutput", false)
 
-	core.Options.Port = *port
-	core.Options.Datastore = *datastore
-	core.Options.ExtraParams = *extraParams
-	core.Options.HideExtraParams = *hideExtraParams
+	viper.SetConfigName("config")
+	viper.SetConfigType("json")
+	viper.SetConfigType("yaml")
+	viper.AddConfigPath(".")
 
-	fmt.Printf(core.Options.String(core.Options.HideExtraParams))
+	viper.AutomaticEnv()
+
+	err := viper.ReadInConfig()
+	if err != nil {
+		panic(fmt.Errorf("fatal error config file: %w", err))
+	}
+
+	fmt.Println("Configuration:")
+	fmt.Printf("- port: %d\n", viper.GetInt("Port"))
+	fmt.Printf("- database: %v\n", viper.GetString("Database"))
+	fmt.Printf("- hide-database-configuration-output: %t\n", viper.GetBool("HideDatabaseConfigurationOutput"))
+	if !viper.GetBool("HideDatabaseConfigurationOutput") {
+		fmt.Printf("- database-configuration: %v\n", viper.GetString("DatabaseConfiguration"))
+	}
 }
 
 func main() {
-	fmt.Printf("Listening on port %d\n", core.Options.Port)
+	fmt.Printf("Listening on port %d\n", viper.GetInt("Port"))
 	doRoute()
 }
 
@@ -44,5 +55,10 @@ func doRoute() {
 	r.HandleFunc(PATH_ROOT, routes.DoNothingRoute)
 	r.HandleFunc(PATH_COUNT_GET, routes.GetCountRoute).Methods("GET")
 	r.HandleFunc(PATH_COUNT_POST, routes.CreateCountRoute).Methods("POST")
-	log.Fatal(http.ListenAndServe(fmt.Sprintf(":%d", core.Options.Port), r))
+	log.Fatal(
+		http.ListenAndServe(
+			fmt.Sprintf(":%d", viper.GetInt("Port")),
+			r,
+		),
+	)
 }

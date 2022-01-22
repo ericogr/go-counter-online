@@ -1,0 +1,5 @@
+{
+    "port": 8080,
+    "database": "postgresql",
+    "databaseConfiguration": "host=localhost dbname=go_counter_online user=go_counter_online password=go_counter_online_password sslmode=disable"
+}

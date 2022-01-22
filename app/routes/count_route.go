@@ -2,14 +2,14 @@ package routes
 
 import (
 	"encoding/json"
-	"fmt"
+	"log"
 	"net/http"
 	"time"
 
-	"github.com/ericogr/go-counter-online/core"
 	"github.com/ericogr/go-counter-online/counter"
 	"github.com/ericogr/go-counter-online/storage"
 	"github.com/gorilla/mux"
+	"github.com/spf13/viper"
 )
 
 // GetCountRoute is the route that handles the count requests using uuid v5 pattern (ex AAAAAAAA-AAAA-5AAA-AAAA-AAAAAAAAAAAA)
@@ -17,17 +17,17 @@ import (
 func GetCountRoute(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	counter := counter.Counter{UUID: vars["uuid"]}
-	counterData, err := storage.GetCounterInstance(core.Options.Datastore, core.Options.ExtraParams)
+	counterData, err := storage.GetCounterInstance(viper.GetString("Database"), viper.GetString("DatabaseConfiguration"))
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
-		fmt.Fprintf(w, "error: %s", err)
+		log.Printf("error: %s", err)
 		return
 	}
 
 	counter, err = counterData.Increment(counter)
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
-		fmt.Fprintf(w, "error: %s", err)
+		log.Printf("error: %s", err)
 		return
 	}
 	json.NewEncoder(w).Encode(counter)
@@ -42,16 +42,16 @@ func CreateCountRoute(w http.ResponseWriter, r *http.Request) {
 	counter.Name = vars["name"]
 	counter.Date = time.Now()
 
-	counterData, err := storage.GetCounterInstance(core.Options.Datastore, core.Options.ExtraParams)
+	counterData, err := storage.GetCounterInstance(viper.GetString("Database"), viper.GetString("DatabaseConfiguration"))
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
-		fmt.Fprintf(w, "error: %s", err)
+		log.Printf("error: %s", err)
 		return
 	}
 	counter, err = counterData.Create(counter)
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
-		fmt.Fprintf(w, "error: %s", err)
+		log.Printf("error: %s", err)
 		return
 	}
 
