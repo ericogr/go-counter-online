@@ -5,11 +5,12 @@ locals {
   major_engine_version = "11"
   instance_class = "db.t3.large"
   username = "go_counter_online"
-  aws_rds_credentials = {
-    instance_address: module.db.db_instance_address,
-    instance_name: module.db.db_instance_name,
-    username: module.db.db_instance_username,
-    password: module.db.db_instance_password
+  aws_rds_database_configuration = {
+    databaseConfiguration: format("host=%s port=5432 dbname=%s user=%s password=%s",
+      module.db.db_instance_address,
+      module.db.db_instance_name,
+      module.db.db_instance_username,
+      module.db.db_instance_password)
   }
 }
 
@@ -38,10 +39,11 @@ resource "random_password" "db" {
   special          = false
 }
 
-resource "random_password" "secret" {
-  length    = 4
-  min_upper = 0
-  special   = false
+resource "random_password" "secretname" {
+  length  = 4
+  lower   = true
+  upper   = false
+  special = false
 }
 
 module "db" {
@@ -112,12 +114,13 @@ module "db" {
   }
 }
 
-# change name every time because I need to create and destroy many times and We can't create with the same name
+# change name every new execution because I need to destroy and create many times
+# and we can't create new with the same name as the old one
 resource "aws_secretsmanager_secret" "db" {
-  name = format("%s-db-%s", module.labels.id, random_password.secret.result)
+  name = format("%s-db-%s", module.labels.id, random_password.secretname.result)
 }
 
 resource "aws_secretsmanager_secret_version" "db" {
   secret_id     = aws_secretsmanager_secret.db.id
-  secret_string = jsonencode(local.aws_rds_credentials)
+  secret_string = jsonencode(local.aws_rds_database_configuration)
 }

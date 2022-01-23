@@ -26,10 +26,10 @@ The project is organized as follows:
 |docs|Documentation folder|
 |docs|Image assets used in documentation|
 |script|Miscellaneous scripts|
-|deployment|Deployment files|
-|deployment/kustomize|Kubernetes kustomize deployment files|
-|deployment/terraform|Terraform deployment files|
-|deployment/specs|Kubernetes spec files|
+|deployments|Deployment files|
+|deployments/kustomize|Kubernetes kustomize deployment files|
+|deployments/terraform|Terraform deployment files|
+|deployments/specs|Kubernetes spec files|
 
 > **_IMPORTANT_** In a real life, you must use different repositories to each component (application, kubernetes deployments and terraform...)
 
@@ -114,7 +114,7 @@ data:
 **Example to install Nginx Controller:**
 
 ```sh
-kubectl apply -f deployment/kubernetes/nginx/nginx-deployment.yaml
+kubectl apply -f deployments/specs/nginx/nginx-deployment.yaml
 ```
 
 Reference: https://raw.githubusercontent.com/kubernetes/ingress-nginx/controller-v1.1.0/deploy/static/provider/aws/deploy.yaml
@@ -184,4 +184,11 @@ curl -v -XPOST localhost:8080/count/AAAAAAAA-AAAA-5AAA-AAAA-AAAAAAAAAAAA/test
 
 # Consume counter with UUID v5 AAAAAAAA-AAAA-5AAA-AAAA-AAAAAAAAAAAA:
 curl -v -XGET localhost:8080/count/AAAAAAAA-AAAA-5AAA-AAAA-AAAAAAAAAAAA
+```
+
+**Deploy PSQL**
+```sh
+kubectl run util -it --image=alpine -- sh
+apk --update add postgresql-client
+psql -h <database-dns-name> -U go_counter_online -d prd_go_counter_online
 ```

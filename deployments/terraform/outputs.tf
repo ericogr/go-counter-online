@@ -32,3 +32,9 @@ output "aws_ecr_api_expires_at" {
   value       = data.aws_ecr_authorization_token.api.expires_at
   description = "The time in UTC RFC3339 format when the authorization token api expires."
 }
+
+output "aws_secret_manager_name" {
+  value       = aws_secretsmanager_secret.db.name
+  description = "The name of the secret manager."
+  sensitive   = true
+}
