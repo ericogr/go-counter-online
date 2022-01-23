@@ -19,17 +19,22 @@ var (
 func init() {
 	fmt.Printf("Initializing...\n")
 
+	viper.AutomaticEnv()
+	viper.SetEnvPrefix("COUNTER")
+
 	viper.SetDefault("Port", 8080)
 	viper.SetDefault("Database", "memory")
 	viper.SetDefault("DatabaseConfiguration", "")
 	viper.SetDefault("HideDatabaseConfigurationOutput", false)
 
-	viper.SetConfigName("config")
+	if viper.IsSet("Config") {
+		viper.SetConfigFile(viper.GetString("Config"))
+	} else {
+		viper.SetConfigName("config")
+		viper.AddConfigPath(".")
+	}
 	viper.SetConfigType("json")
 	viper.SetConfigType("yaml")
-	viper.AddConfigPath(".")
-
-	viper.AutomaticEnv()
 
 	err := viper.ReadInConfig()
 	if err != nil {
