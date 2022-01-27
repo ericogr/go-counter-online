@@ -1,4 +1,4 @@
-name: "Terraform"
+name: "Terraform CD"
 on: workflow_dispatch
   # push:
   #   branches:
@@ -9,8 +9,8 @@ on: workflow_dispatch
   #   paths:
   #   - deployments/terraform/**
 jobs:
-  terraform:
-    name: "Terraform"
+  terraform_cd:
+    name: "Terraform CD"
     runs-on: ubuntu-latest
     steps:
     - name: Checkout

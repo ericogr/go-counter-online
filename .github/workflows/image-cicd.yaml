@@ -1,4 +1,4 @@
-name: "Docker CI"
+name: "Container Image CI/CD"
 on: workflow_dispatch
   # push:
   #   branches:
@@ -9,8 +9,8 @@ on: workflow_dispatch
   #   paths:
   #   - app/**
 jobs:
-  docker_ci_cd:
-    name: "Docker CI/CD"
+  image_cicd:
+    name: "Container Image CI/CD"
     runs-on: ubuntu-latest
     steps:
     - name: Checkout
