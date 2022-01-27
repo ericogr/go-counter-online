@@ -7,4 +7,4 @@ bases:
 images:
 - name: go-counter-online
   newName: 043934856969.dkr.ecr.us-east-2.amazonaws.com/go-counter-online/api
-  newTag: dce2b91
+  newTag: 7fd4974
