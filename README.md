@@ -12,7 +12,7 @@ Counter Online is just my reference project to experiment some tecnologies. Here
 ## Intro
 Imagine following scenario: sellers wants to keep product authenticity and users want to check it to get quality goods. You can provide together their product a unique identifier to be validated online. When user validate it for the first time, the counter is one. This means that no one else validated the code before and it can be considered authentic. If other manufacture makes a copy and sell as original, they need to give the validation code. If user tries to validate, the code can be already used or invalid.
 
-## GitHub secret variables
+## GitHub Actions secret variables
 To use this project, you can fork it and change some environment variables. Below the required GitHub Action variables to run this project:
 
 |Variable Name|Description|
