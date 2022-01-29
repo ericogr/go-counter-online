@@ -47,7 +47,7 @@ jobs:
         cmd: yq -i '.spec.template.spec.containers[0].env[0].value = "/mnt/secrets-store/${{ secrets.AWS_SECRET_MANAGER_DATABASE_NAME }}"' deployments/kustomize/api/base/deployment.yaml
     - name: Update secret provider class
       run: |-
-        sed "s#objectName: \".*#objectName: \"${ OBJECT_NAME }\"#g" \
+        sed "s#objectName: \".*#objectName: \"${OBJECT_NAME}\"#g" \
           deployments/kustomize/common/base/secret-provider-class.yaml >\
           deployments/kustomize/common/base/secret-provider-class.yaml.bak
         mv deployments/kustomize/common/base/secret-provider-class.yaml.bak \
