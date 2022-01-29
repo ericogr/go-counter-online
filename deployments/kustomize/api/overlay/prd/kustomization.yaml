@@ -6,5 +6,5 @@ bases:
   - ../../base
 images:
   - name: go-counter-online
-    newName: ${AWS_ECR_API_IMAGE_NAME}
-    newTag: ${SHA_SHORT}
+    newName: 043934856969.dkr.ecr.us-east-2.amazonaws.com/go-counter-online/api
+    newTag: c0da494
