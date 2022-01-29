@@ -3,8 +3,8 @@ apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 namespace: go-counter-online
 bases:
-- ../../base
+  - ../../base
 images:
-- name: go-counter-online
-  newName: 043934856969.dkr.ecr.us-east-2.amazonaws.com/go-counter-online/api
-  newTag: 7fd4974
+  - name: go-counter-online
+    newName: ${AWS_ECR_API_IMAGE_NAME}
+    newTag: ${SHA_SHORT}
