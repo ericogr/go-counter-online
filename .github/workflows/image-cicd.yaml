@@ -34,15 +34,26 @@ jobs:
           ${{ secrets.AWS_ECR_API_IMAGE_NAME }}:latest
           ${{ secrets.AWS_ECR_API_IMAGE_NAME }}:${{ steps.vars.outputs.sha_short }}
     - name: Update image name
-      id: updateImageName
       uses: mikefarah/yq@v4.18.1
       with:
         cmd: yq -i '.images[0].newName = "${{ secrets.AWS_ECR_API_IMAGE_NAME }}"' 'deployments/kustomize/api/overlay/prd/kustomization.yaml'
     - name: Update image tag
-      id: updateImageTag
       uses: mikefarah/yq@v4.18.1
       with:
         cmd: yq -i '.images[0].newTag = "${{ steps.vars.outputs.sha_short }}"' 'deployments/kustomize/api/overlay/prd/kustomization.yaml'
+    - name: Update secret mount name
+      uses: mikefarah/yq@v4.18.1
+      with:
+        cmd: yq -i '.spec.template.spec.containers[0].env[0].value = "/mnt/secrets-store/${{ secrets.AWS_SECRET_MANAGER_DATABASE_NAME }}"' deployments/kustomize/api/base/deployment.yaml
+    - name: Update secret provider class
+      run: |-
+        sed "s#objectName: \".*#objectName: \"${ OBJECT_NAME }\"#g" \
+          deployments/kustomize/common/base/secret-provider-class.yaml >\
+          deployments/kustomize/common/base/secret-provider-class.yaml.bak
+        mv deployments/kustomize/common/base/secret-provider-class.yaml.bak \
+          deployments/kustomize/common/base/secret-provider-class.yaml
+      env:
+        OBJECT_NAME: ${{ secrets.AWS_SECRET_MANAGER_DATABASE_NAME }}
     - name: Commit image changes
       uses: stefanzweifel/git-auto-commit-action@v4
       with:
