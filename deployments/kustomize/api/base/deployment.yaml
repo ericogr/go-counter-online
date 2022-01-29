@@ -20,39 +20,39 @@ spec:
     spec:
       serviceAccountName: go-counter-online-sa
       containers:
-      - name: go-counter-online
-        image: go-counter-online:latest
-        env:
-        - name: COUNTER_CONFIG
-          value: "/mnt/secrets-store/prd-go-counter-online-db-494h"
-        - name: COUNTER_DATABASE
-          value: "postgresql"
-        ports:
-        - name: http
-          containerPort: 8080
-        resources:
-          requests:
-            memory: "64Mi"
-            cpu: "250m"
-          limits:
-            memory: "128Mi"
-            cpu: "500m"
-        readinessProbe:
-          httpGet:
-            path: /
-            port: http
-        livenessProbe:
-          httpGet:
-            path: /
-            port: http
-        volumeMounts:
-        - name: secrets-store-inline
-          mountPath: "/mnt/secrets-store"
-          readOnly: true
+        - name: go-counter-online
+          image: go-counter-online:latest
+          env:
+            - name: COUNTER_CONFIG
+              value: "/mnt/secrets-store/prd-go-counter-online-db-4v6k"
+            - name: COUNTER_DATABASE
+              value: "postgresql"
+          ports:
+            - name: http
+              containerPort: 8080
+          resources:
+            requests:
+              memory: "64Mi"
+              cpu: "250m"
+            limits:
+              memory: "128Mi"
+              cpu: "500m"
+          readinessProbe:
+            httpGet:
+              path: /
+              port: http
+          livenessProbe:
+            httpGet:
+              path: /
+              port: http
+          volumeMounts:
+            - name: secrets-store-inline
+              mountPath: "/mnt/secrets-store"
+              readOnly: true
       volumes:
-      - name: secrets-store-inline
-        csi:
-          driver: secrets-store.csi.k8s.io
-          readOnly: true
-          volumeAttributes:
-            secretProviderClass: "go-counter-online-deployment-aws-secrets"
+        - name: secrets-store-inline
+          csi:
+            driver: secrets-store.csi.k8s.io
+            readOnly: true
+            volumeAttributes:
+              secretProviderClass: "go-counter-online-deployment-aws-secrets"
