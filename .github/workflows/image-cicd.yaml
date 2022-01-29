@@ -41,7 +41,7 @@ jobs:
       env:
         AWS_ECR_API_IMAGE_NAME: ${{ secrets.AWS_ECR_API_IMAGE_NAME }}
     - name: Update image tag
-      id: updateImageName
+      id: updateImageTag
       uses: mikefarah/yq@v4.18.1
       with:
         cmd: yq -i '.images[0].newTag = "${SHA_SHORT}"' 'deployments/kustomize/api/overlay/prd/kustomization.yaml'
