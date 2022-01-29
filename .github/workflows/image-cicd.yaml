@@ -37,14 +37,14 @@ jobs:
       id: updateImageName
       uses: mikefarah/yq@v4.18.1
       with:
-        cmd: yq -i '.images[0].newName = "${AWS_ECR_API_IMAGE_NAME}"' 'deployments/kustomize/api/overlay/prd/kustomization.yaml'
+        cmd: yq -i '.images[0].newName = "${{AWS_ECR_API_IMAGE_NAME}}"' 'deployments/kustomize/api/overlay/prd/kustomization.yaml'
       env:
         AWS_ECR_API_IMAGE_NAME: ${{ secrets.AWS_ECR_API_IMAGE_NAME }}
     - name: Update image tag
       id: updateImageTag
       uses: mikefarah/yq@v4.18.1
       with:
-        cmd: yq -i '.images[0].newTag = "${SHA_SHORT}"' 'deployments/kustomize/api/overlay/prd/kustomization.yaml'
+        cmd: yq -i '.images[0].newTag = "${{SHA_SHORT}}"' 'deployments/kustomize/api/overlay/prd/kustomization.yaml'
       env:
         SHA_SHORT: ${{ steps.vars.outputs.sha_short }}
     - name: Commit image changes
