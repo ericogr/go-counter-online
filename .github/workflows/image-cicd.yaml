@@ -33,24 +33,18 @@ jobs:
         tags: |
           ${{ secrets.AWS_ECR_API_IMAGE_NAME }}:latest
           ${{ secrets.AWS_ECR_API_IMAGE_NAME }}:${{ steps.vars.outputs.sha_short }}
-    - name: Update Image Name
-      id: update_image_name
-      run: |-
-        sed "s#newName:.*#newName: ${AWS_ECR_API_IMAGE_NAME}#g" \
-          deployments/kustomize/api/overlay/prd/kustomization.yaml >\
-          deployments/kustomize/api/overlay/prd/kustomization.yaml.bak
-        mv deployments/kustomize/api/overlay/prd/kustomization.yaml.bak \
-          deployments/kustomize/api/overlay/prd/kustomization.yaml
+    - name: Update image name
+      id: updateImageName
+      uses: mikefarah/yq@v4.18.1
+      with:
+        cmd: yq -i '.images[0].newName = "${AWS_ECR_API_IMAGE_NAME}"' 'deployments/kustomize/api/overlay/prd/kustomization.yaml'
       env:
         AWS_ECR_API_IMAGE_NAME: ${{ secrets.AWS_ECR_API_IMAGE_NAME }}
-    - name: Update Image Tag
-      id: update_image_tag
-      run: |-
-        sed "s#newTag:.*#newTag: ${SHA_SHORT}#g" \
-          deployments/kustomize/api/overlay/prd/kustomization.yaml >\
-          deployments/kustomize/api/overlay/prd/kustomization.yaml.bak
-        mv deployments/kustomize/api/overlay/prd/kustomization.yaml.bak \
-          deployments/kustomize/api/overlay/prd/kustomization.yaml
+    - name: Update image tag
+      id: updateImageName
+      uses: mikefarah/yq@v4.18.1
+      with:
+        cmd: yq -i '.images[0].newTag = "${SHA_SHORT}"' 'deployments/kustomize/api/overlay/prd/kustomization.yaml'
       env:
         SHA_SHORT: ${{ steps.vars.outputs.sha_short }}
     - name: Commit image changes
