@@ -12,6 +12,17 @@ Counter Online is just my reference project to experiment some tecnologies. Here
 ## Intro
 Imagine following scenario: sellers wants to keep product authenticity and users want to check it to get quality goods. You can provide together their product a unique identifier to be validated online. When user validate it for the first time, the counter is one. This means that no one else validated the code before and it can be considered authentic. If other manufacture makes a copy and sell as original, they need to give the validation code. If user tries to validate, the code can be already used or invalid.
 
+## GitHub secret variables
+On way to run this project is creating a fork and change some environment variables. Above some required GitHub variables to run this project with GitActions:
+
+|Variable Name|Description|
+|-------------|-----------|
+|AWS_SECRET_ACCESS_KEY|Store your AWS provider access key|
+|AWS_ACCESS_KEY_ID|Store your AWS provider secret key|
+|AWS_DEFAULT_REGION|Your AWS provider Region|
+|TERRAFORM_GITHUB_TOKEN|Create a GitHub [PAT](https://docs.github.com/pt/authentication/keeping-your-account-and-data-secure/creating-a-personal-access-token) (default token [doesn't work](https://github.community/t/are-there-plans-to-allow-the-actions-token-to-modify-secrets/17626)]|
+
+
 ## Folder Structure
 The project is organized as follows:
 
@@ -26,6 +37,7 @@ The project is organized as follows:
 |docs|Documentation folder|
 |docs|Image assets used in documentation|
 |script|Miscellaneous scripts|
+|.github/workflows|GitHub action pipelines|
 |deployments|Deployment files|
 |deployments/kustomize|Kubernetes kustomize deployment files|
 |deployments/terraform|Terraform deployment files|
@@ -34,9 +46,9 @@ The project is organized as follows:
 > **_IMPORTANT_** In a real life, you must use different repositories to each component (application, kubernetes deployments and terraform...)
 
 # Architecture
-## Application Flow
+## Workflow
 
-This is the use case for this project. Here we have the seller creating uuid codes to be validated by the customer, as you saw in the beginning of this document.
+This is the use case for this project. Here we have the seller creating UUID codes to be validated by the customer, as you saw in the beginning of this document.
 
 ![app-flow](docs/images/app-flow.png?raw=true)
 
@@ -49,7 +61,7 @@ Above you will find the application architecture. I used AWS provider and terraf
 
 ## Configure AWS EKS Load Balancer Controller
 
-Read the documentation: https://docs.aws.amazon.com/eks/latest/userguide/aws-load-balancer-controller.html
+If you want to configure AWS Load Balancer Controler, check the documentation: https://docs.aws.amazon.com/eks/latest/userguide/aws-load-balancer-controller.html
 
 Create a role:
 
@@ -184,6 +196,12 @@ curl -v -XPOST localhost:8080/count/AAAAAAAA-AAAA-5AAA-AAAA-AAAAAAAAAAAA/test
 
 # Consume counter with UUID v5 AAAAAAAA-AAAA-5AAA-AAAA-AAAAAAAAAAAA:
 curl -v -XGET localhost:8080/count/AAAAAAAA-AAAA-5AAA-AAAA-AAAAAAAAAAAA
+```
+
+**Deploy application**
+```sh
+kubectl apply -k deployments/kustomize/common/overlay/prd
+kubectl apply -k deployments/kustomize/api/overlay/prd
 ```
 
 **Deploy PSQL**
