@@ -24,9 +24,13 @@ jobs:
     - name: Configure kubeconfig
       run: |
         aws eks update-kubeconfig --name prd-go-counter-online-eks
+    - name: Register kubeconfig
+      id: kubeconfig
+      run: |
+        echo "::set-output name=KUBECONFIG::$(cat $HOME/.kube/config | base64)"
     - name: Test
       uses: steebchen/kubectl@v2.0.0
       with:
-        config: cat $HOME/.kube/config | base64
+        config: ${{ steps.kubeconfig.outputs.KUBECONFIG }}
         version: v1.21.0
         command: get nodes -owide
