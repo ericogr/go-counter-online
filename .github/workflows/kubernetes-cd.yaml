@@ -29,7 +29,7 @@ jobs:
       run: |
         echo "::set-output name=KUBECONFIG::$(cat $HOME/.kube/config | base64 -w0)"
     - name: Test
-      uses: kodermax/kubectl-aws-eks@master                            
+      uses: kodermax/kubectl-aws-eks@1.0.8
       env:
         KUBE_CONFIG_DATA: ${{ steps.kubeconfig.outputs.KUBECONFIG }}
       with:                                                            

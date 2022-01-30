@@ -26,7 +26,7 @@ spec:
             - name: COUNTER_CONFIG
               value: "/mnt/secrets-store/prd-go-counter-online-db-mdxd"
             - name: COUNTER_DATABASE
-              value: "postgresql"
+              value: "postgres"
           ports:
             - name: http
               containerPort: 8080

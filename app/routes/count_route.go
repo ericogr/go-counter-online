@@ -12,12 +12,14 @@ import (
 	"github.com/spf13/viper"
 )
 
+var DATABASE_INSTANCE counter.CounterData
+
 // GetCountRoute is the route that handles the count requests using uuid v5 pattern (ex AAAAAAAA-AAAA-5AAA-AAAA-AAAAAAAAAAAA)
 // ex: curl 'http://localhost:8080/count/AAAAAAAA-AAAA-5AAA-AAAA-AAAAAAAAAAAA'
 func GetCountRoute(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	counter := counter.Counter{UUID: vars["uuid"]}
-	counterData, err := storage.GetCounterInstance(viper.GetString("Database"), viper.GetString("DatabaseConfiguration"))
+	counterData, err := getDatabaseInstance()
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		log.Printf("error: %s", err)
@@ -42,7 +44,7 @@ func CreateCountRoute(w http.ResponseWriter, r *http.Request) {
 	counter.Name = vars["name"]
 	counter.Date = time.Now()
 
-	counterData, err := storage.GetCounterInstance(viper.GetString("Database"), viper.GetString("DatabaseConfiguration"))
+	counterData, err := getDatabaseInstance()
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		log.Printf("error: %s", err)
@@ -56,4 +58,16 @@ func CreateCountRoute(w http.ResponseWriter, r *http.Request) {
 	}
 
 	w.WriteHeader(http.StatusCreated)
+}
+
+func getDatabaseInstance() (counter.CounterData, error) {
+	var err error
+	if DATABASE_INSTANCE == nil {
+		DATABASE_INSTANCE, err = storage.GetCounterInstance(viper.GetString("Database"), viper.GetString("DatabaseConfiguration"))
+	}
+	if err != nil {
+		return nil, err
+	}
+
+	return DATABASE_INSTANCE, nil
 }
