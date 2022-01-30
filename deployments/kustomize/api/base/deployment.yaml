@@ -24,7 +24,7 @@ spec:
           image: go-counter-online:latest
           env:
             - name: COUNTER_CONFIG
-              value: "/mnt/secrets-store/prd-go-counter-online-db-4v6k"
+              value: "/mnt/secrets-store/prd-go-counter-online-db-mdxd"
             - name: COUNTER_DATABASE
               value: "postgresql"
           ports:
