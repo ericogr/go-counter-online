@@ -5,9 +5,8 @@ import (
 	"log"
 	"time"
 
-	_ "github.com/lib/pq"
-
 	"github.com/ericogr/go-counter-online/counter"
+	_ "github.com/lib/pq"
 )
 
 type CounterDataPostgresql struct {
