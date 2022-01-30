@@ -27,6 +27,6 @@ jobs:
     - name: Test
       uses: steebchen/kubectl@v2.0.0
       with:
-        config: ${{ secrets.AWS_EKS_KUBECONFIG_DATA }}
+        config: ~/.kube/config
         version: v1.21.0
         command: get nodes -owide
