@@ -1,16 +1,30 @@
-# Counter Online (under development)
+# Counter Online
 
-Counter Online is just my reference project to experiment some tecnologies. Here you will find:
+Counter Online is just my learning project to experiment some technologies. Here you will find:
 
-- Backend app written in Go
+- Backend app written in Go language
 - Terraform to deploy infrastructure components on AWS
 - Kubernetes to manage app containers
-- GitHub Actions to deploy Terraform infrastructure
-- Tekton to deploy kubernetes infrastructure
-- AWS as cloud provider
+- GitHub Actions to CI/CD
+- AWS as a cloud provider
 
-## Intro
-Imagine following scenario: sellers wants to keep product authenticity and users want to check it to get quality goods. You can provide together their product a unique identifier to be validated online. When user validate it for the first time, the counter is one. This means that no one else validated the code before and it can be considered authentic. If other manufacture makes a copy and sell as original, they need to give the validation code. If user tries to validate, the code can be already used or invalid.
+## Introduction
+Imagine following scenario: sellers wants to keep their product authenticity and users want to check it to get quality goods. You can provide together their product a unique identifier to be validated online. When user validate it for the first time, the counter is one. This means that no one else validated the code before and it can be considered authentic. If another manufacturer makes a copy and sell it as original, they need to give the validation code to customers. If customers tries to validate, the code can be already used or invalid.
+
+## Development state
+|#|Feature|Description|State|Comment|
+|-|-------|-----------|-----|-------|
+| 1|Documentation|Document the process and architecture|In progress|-|
+| 2|Counter App Service|The counter application|Ready|-|
+| 3|Counter App Service Build|The counter continuous integration (CI)|Ready|-|
+| 4|Counter App Service Deployment|The counter application deployment (CD)|Ready|For now, can be started manually|
+| 5|AWS Infrastructure (Terraform)|Terraform files to create infrastructure|Ready|-|
+| 6|AWS Infrastructure (Terraform) Deployment|Terraform infrastructure pipeline (CD)|Ready|For now, can be started manually|
+| 7|AWS Password Manager CSI Driver|CSI driver deployment|Not Started|Can be done manually|
+| 8|AWS Password Manager CSI Provider|CSI provider deployment|Not Started|Can be done manually|
+| 9|DNS Management|Implement DNS Management|Not Started|-|
+|10|Ingress Nginx|Kubernetes ingress deployment|Not Started|For now, you can use AWS NLB|
+|11|CertManager|Implement Cert Manager|Not Started|-|
 
 ## GitHub Actions secret variables
 To use this project, you can fork it and change some environment variables. Below the required GitHub Action variables to run this project:
@@ -37,18 +51,18 @@ The project is organized as follows:
 |docs|Documentation folder|
 |docs|Image assets used in documentation|
 |script|Miscellaneous scripts|
-|.github/workflows|GitHub action pipelines|
-|deployments|Deployment files|
+|.github/workflows|GitHub action workflow pipelines|
+|deployments|Deployment folder|
 |deployments/kustomize|Kubernetes kustomize deployment files|
 |deployments/terraform|Terraform deployment files|
 |deployments/specs|Kubernetes spec files|
 
-> **_IMPORTANT_** In a real life, you must use different repositories to each component (application, kubernetes deployments and terraform...)
+> **_IMPORTANT:_** In a production environment, you must use different repositories to each component (application, kubernetes deployments, terraform...)
 
 # Architecture
 ## Workflow
 
-This is the use case for this project. Here we have the seller creating UUID codes to be validated by the customer, as you saw in the beginning of this document.
+This is the use case for this project. Here we have the seller creating UUID v5 codes to be validated by the customer (maybe using qr code), as you saw in the beginning of this document.
 
 ![app-flow](docs/images/app-flow.png?raw=true)
 
@@ -162,7 +176,7 @@ psql -U postgres
 
 **Postgresql Database and table**
 
-Script to create user, database and table (application can create table in public schema it it doesn't exist):
+Script to create user, database and table (application can create table in public schema if it doesn't exist):
 
 ```sql
 # create user and database
@@ -178,7 +192,7 @@ CREATE TABLE counter (
 );
 ```
 
-**Command line to run Go Counter Online**
+**Command line to run Counter Online**
 
 ```sh
 # memory database
@@ -188,10 +202,10 @@ go run . -port=8080 -datastore=memory
 go run . -port=8080 -datastore=postgresql -extra-params='host=localhost dbname=go_counter_online user=go_counter_online password=go_counter_online_password sslmode=disable' -hide-extra-params=true
 ```
 
-**Curl commands to call Go Counter Online API services**
+**Curl commands to test Counter Online API services**
 
 ```sh
-# Create counter with UUID v5 AAAAAAAA-AAAA-5AAA-AAAA-AAAAAAAAAAAA and name test:
+# Create counter with UUID v5 AAAAAAAA-AAAA-5AAA-AAAA-AAAAAAAAAAAA using name test:
 curl -v -XPOST localhost:8080/count/AAAAAAAA-AAAA-5AAA-AAAA-AAAAAAAAAAAA/test
 
 # Consume counter with UUID v5 AAAAAAAA-AAAA-5AAA-AAAA-AAAAAAAAAAAA:
@@ -205,6 +219,8 @@ kubectl apply -k deployments/kustomize/api/overlay/prd
 ```
 
 **Deploy PSQL**
+
+Deploy psql utility to connect to Postgres database
 ```sh
 kubectl run util -it --image=alpine -- sh
 apk --update add postgresql-client
