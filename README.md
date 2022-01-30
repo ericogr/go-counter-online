@@ -162,7 +162,7 @@ psql -U postgres
 
 **Postgresql Database and table**
 
-Script to create user, database and table:
+Script to create user, database and table (application can create table in public schema it it doesn't exist):
 
 ```sql
 # create user and database
@@ -178,7 +178,7 @@ CREATE TABLE counter (
 );
 ```
 
-**Command line to run Go Cunter Online**
+**Command line to run Go Counter Online**
 
 ```sh
 # memory database

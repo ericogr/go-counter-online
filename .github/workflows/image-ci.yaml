@@ -23,4 +23,4 @@ jobs:
         platforms: linux/amd64
         push: false
         tags: |
-          ${{ secrets.AWS_ECR_API_IMAGE_NAME }}:ci
+          go-counter-online:ci
