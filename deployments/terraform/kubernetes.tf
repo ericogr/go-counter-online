@@ -1,3 +1,38 @@
+locals {
+  kubeconfig = <<KUBECONFIG
+apiVersion: v1
+clusters:
+- cluster:
+    server: ${data.aws_eks_cluster.eks.endpoint}
+    certificate-authority-data: ${data.aws_eks_cluster.eks.certificate_authority.0.data}
+  name: ${data.aws_eks_cluster.eks.name}
+contexts:
+- context:
+    cluster: ${data.aws_eks_cluster.eks.name}
+    user: ${data.aws_eks_cluster.eks.name}
+  name: ${data.aws_eks_cluster.eks.name}
+current-context: ${data.aws_eks_cluster.eks.name}
+kind: Config
+preferences: {}
+users:
+- name: ${data.aws_eks_cluster.eks.name}
+  user:
+    exec:
+      apiVersion: client.authentication.k8s.io/v1alpha1
+      command: aws
+      args:
+        - "eks"
+        - "get-token"
+        - "--cluster-name"
+        - "${data.aws_eks_cluster.eks.name}"
+        - "--region"
+        - "${data.aws_region.current.name}"
+KUBECONFIG
+}
+
+data "aws_region" "current" {
+}
+
 data "aws_eks_cluster" "eks" {
   name = module.eks.cluster_id
 }

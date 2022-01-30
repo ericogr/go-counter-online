@@ -19,3 +19,15 @@ resource "github_actions_secret" "aws_ecr_api_password" {
   secret_name     = "AWS_ECR_API_PASSWORD"
   plaintext_value = data.aws_ecr_authorization_token.api.password
 }
+
+resource "github_actions_secret" "aws_secret_manager_database_name" {
+  repository      = var.github_repository_name
+  secret_name     = "AWS_SECRET_MANAGER_DATABASE_NAME"
+  plaintext_value = aws_secretsmanager_secret.db.name
+
+}
+resource "github_actions_secret" "aws_eks_kubeconfig" {
+  repository      = var.github_repository_name
+  secret_name     = "AWS_EKS_KUBECONFIG_DATA"
+  plaintext_value = base64encode(local.kubeconfig)
+}

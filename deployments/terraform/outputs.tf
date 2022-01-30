@@ -33,8 +33,14 @@ output "aws_ecr_api_expires_at" {
   description = "The time in UTC RFC3339 format when the authorization token api expires."
 }
 
-output "aws_secret_manager_name" {
+output "aws_secret_manager_db_name" {
   value       = aws_secretsmanager_secret.db.name
-  description = "The name of the secret manager."
+  description = "The name of the secret manager object."
+  sensitive   = true
+}
+
+output "kubeconfig" {
+  value       = local.kubeconfig
+  description = "The kubernetes kubeconfig file."
   sensitive   = true
 }
