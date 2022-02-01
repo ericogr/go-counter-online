@@ -24,9 +24,11 @@ spec:
           image: go-counter-online:latest
           env:
             - name: COUNTER_CONFIG
-              value: "/mnt/secrets-store/prd-go-counter-online-db-mdxd"
+              value: "/mnt/secrets-store/prd-go-counter-online-db-nkdl"
             - name: COUNTER_DATABASE
               value: "postgres"
+            - name: COUNTER_HIDEDATABASECONFIGURATIONOUTPUT
+              value: "true"
           ports:
             - name: http
               containerPort: 8080

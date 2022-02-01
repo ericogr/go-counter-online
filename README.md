@@ -17,11 +17,11 @@ Imagine following scenario: sellers wants to keep their product authenticity and
 | 1|Documentation|Document the process and architecture|In progress|-|
 | 2|Counter App Service|The counter application|Ready|-|
 | 3|Counter App Service Build|The counter continuous integration (CI)|Ready|-|
-| 4|Counter App Service Deployment|The counter application deployment (CD)|Ready|For now, can be started manually|
+| 4|Counter App Service Deployment|The counter application deployment (CD)|Ready|-|
 | 5|AWS Infrastructure (Terraform)|Terraform files to create infrastructure|Ready|-|
-| 6|AWS Infrastructure (Terraform) Deployment|Terraform infrastructure pipeline (CD)|Ready|For now, can be started manually|
-| 7|AWS Password Manager CSI Driver|CSI driver deployment|Not Started|Can be done manually|
-| 8|AWS Password Manager CSI Provider|CSI provider deployment|Not Started|Can be done manually|
+| 6|AWS Infrastructure (Terraform) Deployment|Terraform infrastructure pipeline (CD)|Ready|-|
+| 7|AWS Password Manager CSI Driver|CSI driver deployment|Ready|-|
+| 8|AWS Password Manager CSI Provider|CSI provider deployment|Ready|-|
 | 9|DNS Management|Implement DNS Management|Not Started|-|
 |10|Ingress Nginx|Kubernetes ingress deployment|Not Started|For now, you can use AWS NLB|
 |11|CertManager|Implement Cert Manager|Not Started|-|

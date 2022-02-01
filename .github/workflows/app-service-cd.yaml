@@ -1,0 +1,40 @@
+name: "Counter Online CD"
+on:
+  push:
+    branches:
+    - master
+    paths:
+    - deployments/kustomize/**
+  workflow_run:
+    workflows:
+    - Container Image CI/CD
+    branches:
+    - master
+    types:
+    - completed
+jobs:
+  app_service_cd:
+    name: "Counter Online CD"
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v2
+    - name: Configure AWS credentials
+      uses: aws-actions/configure-aws-credentials@v1
+      with:
+        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        aws-region: ${{ secrets.AWS_DEFAULT_REGION }}
+    - name: Configure kubeconfig
+      run: |
+        aws eks update-kubeconfig --name prd-go-counter-online-eks
+    - name: Install kubectl
+      uses: azure/setup-kubectl@v2.0
+      with:
+        version: 'v1.21.0'
+    - name: Deploy Common
+      run: |
+        kubectl apply -k deployments/kustomize/common/overlay/prd
+    - name: Deploy API
+      run: |
+        kubectl apply -k deployments/kustomize/api/overlay/prd
