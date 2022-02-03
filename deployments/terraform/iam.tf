@@ -301,6 +301,38 @@ module "iam_policy_ascp" {
 EOF
 }
 
+module "iam_cluster_autoscaler" {
+  source  = "terraform-aws-modules/iam/aws//modules/iam-policy"
+  version = "~> 4"
+
+  name        = "AmazonEKSClusterAutoscalerPolicy"
+  path        = "/"
+  description = "An IAM policy that grants the permissions that the Cluster Autoscaler requires to use an IAM role"
+
+  tags = module.labels.tags
+
+  policy = <<EOF
+{
+    "Version": "2012-10-17",
+    "Statement": [
+        {
+            "Action": [
+                "autoscaling:DescribeAutoScalingGroups",
+                "autoscaling:DescribeAutoScalingInstances",
+                "autoscaling:DescribeLaunchConfigurations",
+                "autoscaling:DescribeTags",
+                "autoscaling:SetDesiredCapacity",
+                "autoscaling:TerminateInstanceInAutoScalingGroup",
+                "ec2:DescribeLaunchTemplateVersions"
+            ],
+            "Resource": "*",
+            "Effect": "Allow"
+        }
+    ]
+}
+EOF
+}
+
 module "iam_assumable_role_with_oidc" {
   source  = "terraform-aws-modules/iam/aws//modules/iam-assumable-role-with-oidc"
   version = "~> 4"
@@ -340,6 +372,27 @@ module "iam_assumable_role_with_oidc_ascp" {
 
   role_policy_arns = [
     module.iam_policy_ascp.arn
+  ]
+  number_of_role_policy_arns = 1
+}
+
+module "iam_assumable_role_with_oidc_autoscaler" {
+  source  = "terraform-aws-modules/iam/aws//modules/iam-assumable-role-with-oidc"
+  version = "~> 4"
+
+  create_role = true
+
+  role_name        = "AmazonEKSClusterAutoscalerRole"
+  role_description = "The role allows the AWS Secret Configuration Provider to assume the role of the Amazon EKS cluster."
+
+  oidc_fully_qualified_audiences = ["sts.amazonaws.com"]
+  provider_url                   = module.eks.cluster_oidc_issuer_url
+  oidc_fully_qualified_subjects  = ["system:serviceaccount:kube-system:cluster-autoscaler"]
+
+  tags = module.labels.tags
+
+  role_policy_arns = [
+    module.iam_cluster_autoscaler.arn
   ]
   number_of_role_policy_arns = 1
 }

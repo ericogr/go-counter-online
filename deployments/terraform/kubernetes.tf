@@ -77,6 +77,10 @@ module "eks" {
       k8s_labels = {
         Environment = var.stage
       }
+      tags = {
+        format("k8s.io/cluster-autoscaler/%s-eks", module.labels.id) = "owned"
+        "k8s.io/cluster-autoscaler/enabled" = "TRUE"
+      }
     }
   }
 
