@@ -8,10 +8,10 @@ Counter Online is just my learning project to experiment some technologies. Here
 - GitHub Actions to CI/CD
 - AWS as a cloud provider
 
-## Introduction
+# Introduction
 Imagine following scenario: sellers wants to keep their product authenticity and users want to check it to get quality goods. You can provide together their product a unique identifier to be validated online. When user validate it for the first time, the counter is one. This means that no one else validated the code before and it can be considered authentic. If another manufacturer makes a copy and sell it as original, they need to give the validation code to customers. If customers tries to validate, the code can be already used or invalid.
 
-## Development state
+# Development state
 |#|Feature|Description|State|Comment|
 |-|-------|-----------|-----|-------|
 | 1|Documentation|Document the process and architecture|In progress|-|
@@ -22,28 +22,19 @@ Imagine following scenario: sellers wants to keep their product authenticity and
 | 6|AWS Infrastructure (Terraform) Deployment|Terraform infrastructure pipeline (CD)|Ready|-|
 | 7|AWS Password Manager CSI Driver|CSI driver deployment|Ready|-|
 | 8|AWS Password Manager CSI Provider|CSI provider deployment|Ready|-|
-| 9|DNS Management|Implement DNS Management|Not Started|-|
-|10|Ingress Nginx|Kubernetes ingress deployment|Not Started|For now, you can use AWS NLB|
-|11|CertManager|Implement Cert Manager|Not Started|-|
+| 9|AWS Kubernetes Cluster Autoscaler|Automatically adjusts the number of nodes when needed|In progress|-|
+| 9|AWS Kubernetes Cluster Autoscaler Deployment|AWS Kubernetes Cluster Autoscaler pipeline|Not started|-|
+|10|DNS Management|Implement DNS Management|Not started|-|
+|11|Ingress Nginx|Kubernetes ingress deployment|Not started|For now, you can use AWS NLB|
+|12|CertManager|Implement Cert Manager|Not started|-|
 
-## GitHub Actions secret variables
-To use this project, you can fork it and change some environment variables. Below the required GitHub Action variables to run this project:
-
-|Variable Name|Description|
-|-------------|-----------|
-|AWS_SECRET_ACCESS_KEY|Store your AWS provider access key|
-|AWS_ACCESS_KEY_ID|Store your AWS provider secret key|
-|AWS_DEFAULT_REGION|Your AWS provider Region|
-|TERRAFORM_GITHUB_TOKEN|Create a GitHub [PAT](https://docs.github.com/pt/authentication/keeping-your-account-and-data-secure/creating-a-personal-access-token) (default token [doesn't work](https://github.community/t/are-there-plans-to-allow-the-actions-token-to-modify-secrets/17626)]|
-
-
-## Folder Structure
+# Folders
 The project is organized as follows:
 
 ![project-folder-structure](docs/images/project-folder-structure.png?raw=true)
 
-|Folder|Description                                       |
-|:-----|:-------------------------------------------------|
+|Folder|Description|
+|:-----|:----------|
 |app|App source code|
 |app/counter|App Go package source code|
 |app/routes|App Go package source code|
@@ -58,6 +49,66 @@ The project is organized as follows:
 |deployments/specs|Kubernetes spec files|
 
 > **_IMPORTANT:_** In a production environment, you must use different repositories to each component (application, kubernetes deployments, terraform...)
+> 
+# How to use this repository
+I recommend you fork this repository to your github account, but you can download it and change as your own parameters. The next two sections, I'll show you what you gonna need to do.
+
+## GitHub Actions secret variables
+These are GitHub Action variables needed by automation:
+
+|Variable Name|Description|
+|-------------|-----------|
+|AWS_SECRET_ACCESS_KEY|Store your AWS provider access key|
+|AWS_ACCESS_KEY_ID|Store your AWS provider secret key|
+|AWS_DEFAULT_REGION|Your AWS provider Region|
+|TERRAFORM_GITHUB_TOKEN|Create a GitHub [PAT](https://docs.github.com/pt/authentication/keeping-your-account-and-data-secure/creating-a-personal-access-token) (default token [doesn't work](https://github.community/t/are-there-plans-to-allow-the-actions-token-to-modify-secrets/17626)]|
+
+## Configuration replacement
+
+Open file **go-counter-online/deployments/kustomize/common/base/service-account.yaml** and change:
+```yaml
+eks.amazonaws.com/role-arn: arn:aws:iam::043934856969:role/AmazonSCPRole
+```
+to
+```yaml
+eks.amazonaws.com/role-arn: arn:aws:iam::<your aws account id>:role/AmazonSCPRole
+```
+
+Open file **go-counter-online/deployments/specs/aws-cluster-autoscaler-service/cluster-autoscaler-autodiscover.yaml** and change:
+```yaml
+eks.amazonaws.com/role-arn": "arn:aws:iam::043934856969:role/AmazonEKSClusterAutoscalerRole
+```
+to
+```yaml
+eks.amazonaws.com/role-arn": "arn:aws:iam::<your aws account id>:role/AmazonEKSClusterAutoscalerRole
+```
+
+Open file **go-counter-online/deployments/specs/aws-load-balancer-controler-service/aws-load-balancer-controller-service-account.yaml** and change:
+```yaml
+eks.amazonaws.com/role-arn: arn:aws:iam::043934856969:role/AmazonEKSLoadBalancerControllerRole
+```
+to
+```yaml
+eks.amazonaws.com/role-arn: arn:aws:iam::<your aws account id>:role/AmazonEKSLoadBalancerControllerRole
+```
+
+Open file **go-counter-online/deployments/specs/aws-load-balancer-controler-service/aws-load-balancer-controller-service-account.yaml** and change:
+```yaml
+eks.amazonaws.com/role-arn: arn:aws:iam::043934856969:role/AmazonEKSLoadBalancerControllerRole
+```
+to
+```yaml
+eks.amazonaws.com/role-arn: arn:aws:iam::<your aws account id>:role/AmazonEKSLoadBalancerControllerRole
+```
+
+Open file **go-counter-online/deployments/terraform/iam.tf** and change:
+```yaml
+"Resource": ["arn:aws:secretsmanager:us-east-2:043934856969:secret:*"]
+```
+to
+```yaml
+"Resource": ["arn:aws:secretsmanager:us-east-2:<your aws account id>:secret:*"]
+```
 
 # Architecture
 ## Workflow
@@ -66,16 +117,21 @@ This is the use case for this project. Here we have the seller creating UUID v5 
 
 ![app-flow](docs/images/app-flow.png?raw=true)
 
-## App Architecture
+## Infrastructure Architecture
 Above you will find the application architecture. I used AWS provider and terraform to deploy infrastructure components.
 
 ![app-architecture](docs/images/project-architecture.png?raw=true)
 
 # Miscellaneous
 
+## Configure AWS EKS Kubernetes Cluster Autoscaler
+Autoscaling is a function that automatically scales your resources up or down to meet changing demands. This is a major Kubernetes function that would otherwise require extensive human resources to perform manually.
+
+Check the documentation: https://docs.aws.amazon.com/eks/latest/userguide/autoscaling.html
+
 ## Configure AWS EKS Load Balancer Controller
 
-If you want to configure AWS Load Balancer Controler, check the documentation: https://docs.aws.amazon.com/eks/latest/userguide/aws-load-balancer-controller.html
+The AWS Load Balancer Controller manages AWS Elastic Load Balancers for a Kubernetes cluster. If you want to configure AWS Load Balancer Controler, check the documentation: https://docs.aws.amazon.com/eks/latest/userguide/aws-load-balancer-controller.html
 
 Create a role:
 
@@ -93,6 +149,8 @@ metadata:
     app.kubernetes.io/name: aws-load-balancer-controller
 ```
 
+> **_IMPORTANT:_** Replace 043934856969 with your AWS account id
+
 Example to Helm installing on region us-east-2:
 
 ```sh
@@ -107,6 +165,8 @@ helm upgrade --install \
   --set vpcId=vpc-00c9e2b37ad914722 \
   --set image.repository=602401143452.dkr.ecr.us-east-2.amazonaws.com/amazon/aws-load-balancer-controller
 ```
+
+> **_IMPORTANT:_** Replace vpc-00c9e2b37ad914722 with your AWS VPC id
 
 ## Useful commands
 
