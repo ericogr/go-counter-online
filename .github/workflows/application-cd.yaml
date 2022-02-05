@@ -1,4 +1,4 @@
-name: "Counter Online CD"
+name: "Application CD"
 on:
   push:
     branches:
@@ -7,14 +7,14 @@ on:
     - deployments/kustomize/**
   workflow_run:
     workflows:
-    - Container Image CI/CD
+    - Application Image Master CI
     branches:
     - master
     types:
     - completed
 jobs:
-  app_service_cd:
-    name: "Counter Online CD"
+  application_cd:
+    name: "Application CD"
     runs-on: ubuntu-latest
     steps:
     - name: Checkout
@@ -32,9 +32,9 @@ jobs:
       uses: azure/setup-kubectl@v2.0
       with:
         version: 'v1.21.0'
-    - name: Deploy Common
+    - name: Deploy kustomize Common
       run: |
         kubectl apply -k deployments/kustomize/common/overlay/prd
-    - name: Deploy API
+    - name: Deploy kustomize API
       run: |
         kubectl apply -k deployments/kustomize/api/overlay/prd

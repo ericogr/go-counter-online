@@ -1,13 +1,5 @@
 name: "Terraform CD"
 on: workflow_dispatch
-  # push:
-  #   branches:
-  #   - master
-  #   paths:
-  #   - deployments/terraform/**
-  # pull_request:
-  #   paths:
-  #   - deployments/terraform/**
 jobs:
   terraform_cd:
     name: "Terraform CD"

@@ -1,16 +1,14 @@
-name: "Container Image CI/CD"
-on: workflow_dispatch
-  # push:
-  #   branches:
-  #   - master
-  #   paths:
-  #   - app/**
-  # pull_request:
-  #   paths:
-  #   - app/**
+name: "Application Image Master CI"
+on:
+  push:
+    branches:
+    - master
+    paths:
+    - app/**
+    - deployments/kustomize/**
 jobs:
-  image_cicd:
-    name: "Container Image CI/CD"
+  image_ci:
+    name: "Application Image CI"
     runs-on: ubuntu-latest
     steps:
     - name: Checkout

@@ -1,11 +1,10 @@
-name: "AWS Secret Manager CD"
+name: "AWS Autoscaler CD"
 on:
   push:
     branches:
     - master
     paths:
-    - deployments/specs/ascp/**
-    - .github/workflows/aws-secret-manager-cd.yaml
+    - deployments/specs/aws-cluster-autoscaler/**
   workflow_run:
     workflows:
     - Terraform CD
@@ -14,8 +13,8 @@ on:
     types:
     - completed
 jobs:
-  aws_secret_mnanager:
-    name: "AWS Secret Manager CD"
+  aws_autoscaler_cd:
+    name: "AWS Autoscaler CD"
     runs-on: ubuntu-latest
     steps:
     - name: Checkout
@@ -33,17 +32,6 @@ jobs:
       uses: azure/setup-kubectl@v2.0
       with:
         version: 'v1.21.0'
-    - name: Install Helm
-      uses: azure/setup-helm@v1
-      with:
-        version: v3.4.0
-    - name: Install CSI Driver
+    - name: Install AWS Autoscaler
       run: |
-        helm upgrade --install \
-          csi-secrets-store secrets-store-csi-driver \
-          -n kube-system \
-          --repo https://raw.githubusercontent.com/kubernetes-sigs/secrets-store-csi-driver/master/charts \
-          --version 1.0.1
-    - name: Install CSI provider
-      run: |
-        kubectl apply -f deployments/specs/ascp/aws-provider-installer.yaml
+        kubectl apply -f deployments/specs/aws-cluster-autoscaler/cluster-autoscaler-autodiscover.yaml

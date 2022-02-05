@@ -1,8 +1,7 @@
-name: "Container Image CI"
+name: "Application Image Development CI"
 on:
   push:
     branches:
-    - master
     - development
     paths:
     - app/**
@@ -11,7 +10,7 @@ on:
     - app/**
 jobs:
   image_ci:
-    name: "Container Image CI"
+    name: "Application Image CI"
     runs-on: ubuntu-latest
     steps:
     - name: Checkout

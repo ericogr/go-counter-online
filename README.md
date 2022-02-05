@@ -209,10 +209,11 @@ Reference: https://raw.githubusercontent.com/kubernetes/ingress-nginx/controller
 
 CSI Driver:
 ```sh
+# https://github.com/kubernetes-sigs/secrets-store-csi-driver/tree/main/charts/secrets-store-csi-driver
 helm upgrade --install \
   csi-secrets-store secrets-store-csi-driver \
   -n kube-system \
-  --repo https://raw.githubusercontent.com/kubernetes-sigs/secrets-store-csi-driver/master/charts
+  --repo https://raw.githubusercontent.com/kubernetes-sigs/secrets-store-csi-driver/master/charts --version 1.0.1
 ```
 
 Provider:
