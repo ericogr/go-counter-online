@@ -79,7 +79,7 @@ module "eks" {
       }
       tags = {
         format("k8s.io/cluster-autoscaler/%s-eks", module.labels.id) = "owned"
-        "k8s.io/cluster-autoscaler/enabled" = "TRUE"
+        "k8s.io/cluster-autoscaler/enabled"                          = "TRUE"
       }
     }
   }
@@ -122,11 +122,11 @@ module "eks" {
     }
 
     engress_cluster_5432 = {
-      description = "Internal communcation to postgres"
-      protocol    = "tcp"
-      from_port   = 5432
-      to_port     = 5432
-      type        = "egress"
+      description              = "Internal communcation to postgres"
+      protocol                 = "tcp"
+      from_port                = 5432
+      to_port                  = 5432
+      type                     = "egress"
       source_security_group_id = module.security_group_database.security_group_id
     }
   }

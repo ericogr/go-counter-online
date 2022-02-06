@@ -1,16 +1,16 @@
 locals {
-  engine = "postgres"
-  engine_version = "11.10"
-  family = "postgres11"
+  engine               = "postgres"
+  engine_version       = "11.10"
+  family               = "postgres11"
   major_engine_version = "11"
-  instance_class = "db.t3.large"
-  username = "go_counter_online"
+  instance_class       = "db.t3.large"
+  username             = "go_counter_online"
   aws_rds_database_configuration = {
-    databaseConfiguration: format("host=%s port=5432 dbname=%s user=%s password=%s",
+    databaseConfiguration : format("host=%s port=5432 dbname=%s user=%s password=%s",
       module.db.db_instance_address,
       module.db.db_instance_name,
       module.db.db_instance_username,
-      module.db.db_instance_password)
+    module.db.db_instance_password)
   }
 }
 
@@ -24,9 +24,9 @@ module "security_group_database" {
 
   # ingress
   ingress_with_cidr_blocks = [for s in module.vpc.private_subnets_cidr_blocks : {
-    from_port = 5432
-    to_port   = 5432
-    protocol  = "tcp"
+    from_port   = 5432
+    to_port     = 5432
+    protocol    = "tcp"
     cidr_blocks = s
     description = "PostgreSQL access from within VPC private subnets"
   }]
@@ -35,8 +35,8 @@ module "security_group_database" {
 }
 
 resource "random_password" "db" {
-  length           = 16
-  special          = false
+  length  = 16
+  special = false
 }
 
 resource "random_password" "secretname" {
@@ -55,7 +55,7 @@ module "db" {
   # All available versions: https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/CHAP_PostgreSQL.html#PostgreSQL.Concepts
   engine               = local.engine
   engine_version       = local.engine_version
-  family               = local.family # DB parameter group
+  family               = local.family               # DB parameter group
   major_engine_version = local.major_engine_version # DB option group
   instance_class       = local.instance_class
 
