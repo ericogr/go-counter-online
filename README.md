@@ -22,8 +22,8 @@ Imagine following scenario: sellers wants to keep their product authenticity and
 | 6|AWS Infrastructure (Terraform) Deployment|Terraform infrastructure pipeline (CD)|Ready|-|
 | 7|AWS Password Manager CSI Driver|CSI driver deployment|Ready|-|
 | 8|AWS Password Manager CSI Provider|CSI provider deployment|Ready|-|
-| 9|AWS Kubernetes Cluster Autoscaler|Automatically adjusts the number of nodes when needed|In progress|-|
-| 9|AWS Kubernetes Cluster Autoscaler Deployment|AWS Kubernetes Cluster Autoscaler pipeline|Not started|-|
+| 9|AWS Kubernetes Cluster Autoscaler|Automatically adjusts the number of nodes when needed|Ready|-|
+| 9|AWS Kubernetes Cluster Autoscaler Deployment|AWS Kubernetes Cluster Autoscaler pipeline|Ready|-|
 |10|DNS Management|Implement DNS Management|Not started|-|
 |11|Ingress Nginx|Kubernetes ingress deployment|Not started|For now, you can use AWS NLB|
 |12|CertManager|Implement Cert Manager|Not started|-|
