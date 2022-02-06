@@ -39,13 +39,13 @@ The project is organized as follows:
 |app/counter|App Go package source code|
 |app/routes|App Go package source code|
 |app/storage|App Go package source code|
-|docs|Documentation folder|
-|docs|Image assets used in documentation|
-|script|Miscellaneous scripts|
+|terraform|Terraform hcl files|
+|scripts|Miscellaneous scripts|
 |.github/workflows|GitHub action workflow pipelines|
-|deployments|Deployment folder|
+|docs|Documentation folder|
+|docs/images|Image assets used in documentation|
+|deployments|Deployments folders|
 |deployments/kustomize|Kubernetes kustomize deployment files|
-|deployments/terraform|Terraform deployment files|
 |deployments/specs|Kubernetes spec files|
 
 > **_IMPORTANT:_** In a production environment, you must use different repositories to each component (application, kubernetes deployments, terraform...)
@@ -101,7 +101,7 @@ to
 eks.amazonaws.com/role-arn: arn:aws:iam::<your aws account id>:role/AmazonEKSLoadBalancerControllerRole
 ```
 
-Open file **go-counter-online/deployments/terraform/iam.tf** and change:
+Open file **go-counter-online/terraform/iam.tf** and change:
 ```yaml
 "Resource": ["arn:aws:secretsmanager:us-east-2:043934856969:secret:*"]
 ```
