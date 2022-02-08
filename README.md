@@ -119,11 +119,6 @@ Above you will find the application architecture. I used AWS provider and terraf
 
 # Miscellaneous
 
-## Configure AWS EKS Kubernetes Cluster Autoscaler
-Autoscaling is a function that automatically scales your resources up or down to meet changing demands. This is a major Kubernetes function that would otherwise require extensive human resources to perform manually.
-
-Check the documentation: https://docs.aws.amazon.com/eks/latest/userguide/autoscaling.html
-
 ## Useful commands
 
 **Update kubeconfig to access EKS Cluster:**
@@ -181,3 +176,15 @@ kubectl run util -it --image=alpine -- sh
 apk --update add postgresql-client
 psql -h <database-dns-name> -U go_counter_online -d prd_go_counter_online
 ```
+
+## Links
+
+### Configure AWS EKS Kubernetes Cluster Autoscaler
+Autoscaling is a function that automatically scales your resources up or down to meet changing demands. This is a major Kubernetes function that would otherwise require extensive human resources to perform manually.
+
+More info: https://docs.aws.amazon.com/eks/latest/userguide/autoscaling.html
+
+### Kubernetes Ingress Nginx
+Ingress exposes HTTP and HTTPS routes from outside the cluster to services within the cluster. Traffic routing is controlled by rules defined on the Ingress resource.
+
+More info: https://raw.githubusercontent.com/kubernetes/ingress-nginx/controller-v1.1.0/deploy/static/provider/aws/deploy.yaml
