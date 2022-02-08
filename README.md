@@ -35,13 +35,13 @@ The project is organized as follows:
 
 |Folder|Description|
 |:-----|:----------|
+|.github/workflows|GitHub action workflow pipelines|
 |app|App source code|
 |app/counter|App Go package source code|
 |app/routes|App Go package source code|
 |app/storage|App Go package source code|
 |terraform|Terraform hcl files|
 |scripts|Miscellaneous scripts|
-|.github/workflows|GitHub action workflow pipelines|
 |docs|Documentation folder|
 |docs/images|Image assets used in documentation|
 |deployments|Deployments folders|
@@ -197,10 +197,10 @@ data:
       - system:masters
 ```
 
-**Example to install Nginx Controller:**
+**Example to install Ingress Nginx Controller:**
 
 ```sh
-kubectl apply -f deployments/specs/nginx/nginx-deployment.yaml
+kubectl apply -f deployments/specs/ingress-nginx/ingress-nginx-deployment.yaml
 ```
 
 Reference: https://raw.githubusercontent.com/kubernetes/ingress-nginx/controller-v1.1.0/deploy/static/provider/aws/deploy.yaml
