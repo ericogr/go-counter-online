@@ -2,22 +2,25 @@ package storage
 
 import (
 	"database/sql"
+	"fmt"
 	"log"
 	"time"
 
-	"github.com/ericogr/go-counter-online/counter"
 	_ "github.com/lib/pq"
 )
 
 type CounterDataPostgresql struct {
 	extraParams string
+	database    *sql.DB
 }
 
 var (
 	POSTGRES_DRIVER_NAME           = "postgres"
+	POSTGRES_MIN_RECONN            = 10 * time.Second
+	POSTGRES_MAX_RECONN            = time.Minute
 	POSTGRES_TABLE_EXISTENCE_QUERY = `
 		SELECT EXISTS (
-			SELECT FROM information_schema.tables 
+			SELECT FROM information_schema.tables
 			WHERE table_schema  = $1
 			AND   table_name   = $2
 		);`
@@ -33,19 +36,24 @@ var (
 	POSTGRES_INSERT_COUNTER_STATEMENT = `
 		INSERT INTO counter (uuid, name, count, date) VALUES ($1, $2, $3, $4)`
 	POSTGRES_UDATE_COUNTER_STATEMENT = `
-		UPDATE counter SET count = $1 WHERE uuid = $2`
+		UPDATE counter SET count = $2, name = $3, date = $4 WHERE uuid = $1`
 )
 
 func (m *CounterDataPostgresql) DatastoreName() string {
 	return POSTGRES_DRIVER_NAME
 }
 
-func (m *CounterDataPostgresql) Init(params string) (counter.CounterData, error) {
+func (m *CounterDataPostgresql) Init(params string) (CounterData, error) {
 	log.Println("Initializing postgres...")
 
 	m.extraParams = params
+	var err error
+	m.database, err = sql.Open(POSTGRES_DRIVER_NAME, m.extraParams)
+	if err != nil {
+		return m, err
+	}
 
-	// TODO: use migrations technique
+	// TODO: use migrations...
 	tableExist, err := m.checkTableExists()
 	if err != nil {
 		return nil, err
@@ -65,15 +73,13 @@ func (m *CounterDataPostgresql) Init(params string) (counter.CounterData, error)
 	return m, nil
 }
 
-func (m *CounterDataPostgresql) Exists(uuid string) (counter.Counter, error) {
-	sqlDB, err := sql.Open(POSTGRES_DRIVER_NAME, m.extraParams)
-	if err != nil {
-		return counter.Counter{}, err
-	}
-	defer sqlDB.Close()
+func (m *CounterDataPostgresql) Terminate() error {
+	return m.database.Close()
+}
 
-	var rowCounter counter.Counter
-	err = sqlDB.QueryRow(POSTGRES_FIND_COUNTER_QUERY, uuid).
+func (m *CounterDataPostgresql) Get(uuid string) (Counter, error) {
+	var rowCounter Counter
+	err := m.database.QueryRow(POSTGRES_FIND_COUNTER_QUERY, uuid).
 		Scan(&rowCounter.UUID, &rowCounter.Name, &rowCounter.Count, &rowCounter.Date)
 	if err != nil {
 		return rowCounter, err
@@ -82,73 +88,50 @@ func (m *CounterDataPostgresql) Exists(uuid string) (counter.Counter, error) {
 	return rowCounter, err
 }
 
-func (m *CounterDataPostgresql) Create(userCounter counter.Counter) (counter.Counter, error) {
-	sqlDB, err := sql.Open(POSTGRES_DRIVER_NAME, m.extraParams)
-	if err != nil {
-		return counter.Counter{}, err
-	}
-	defer sqlDB.Close()
-
-	currentTimestamp := time.Now()
-	_, err = sqlDB.Exec(POSTGRES_INSERT_COUNTER_STATEMENT,
-		userCounter.UUID, userCounter.Name, userCounter.Count, currentTimestamp,
+func (m *CounterDataPostgresql) Create(counter Counter) (Counter, error) {
+	_, err := m.database.Exec(POSTGRES_INSERT_COUNTER_STATEMENT,
+		counter.UUID, counter.Name, counter.Count, counter.Date,
 	)
 	if err != nil {
-		return counter.Counter{}, err
+		return Counter{}, err
 	}
 
-	userCounter.Date = currentTimestamp
-
-	return userCounter, nil
+	return counter, nil
 }
 
-func (m *CounterDataPostgresql) Increment(userCounter counter.Counter) (counter.Counter, error) {
-	rowCounter, err := m.Exists(userCounter.UUID)
-	if err != nil {
-		return rowCounter, err
-	}
-	sqlDB, err := sql.Open(POSTGRES_DRIVER_NAME, m.extraParams)
-	if err != nil {
-		return counter.Counter{}, err
-	}
-	defer sqlDB.Close()
-
-	newCounter := rowCounter.Count + 1
-	_, err = sqlDB.Exec(POSTGRES_UDATE_COUNTER_STATEMENT,
-		newCounter, userCounter.UUID,
+func (m *CounterDataPostgresql) Update(userCounter Counter) (Counter, error) {
+	result, err := m.database.Exec(POSTGRES_UDATE_COUNTER_STATEMENT,
+		userCounter.UUID,
+		userCounter.Count,
+		userCounter.Name,
+		userCounter.Date,
 	)
 	if err != nil {
-		return counter.Counter{}, err
+		return Counter{}, err
 	}
 
-	userCounter.Count = newCounter
+	rows, err := result.RowsAffected()
+	if err != nil {
+		return Counter{}, err
+	}
+
+	if rows == 0 {
+		return Counter{}, fmt.Errorf("no counter found: %s", userCounter.UUID)
+	}
 
 	return userCounter, nil
-
 }
 
 func (m *CounterDataPostgresql) checkTableExists() (bool, error) {
-	sqlDB, err := sql.Open(POSTGRES_DRIVER_NAME, m.extraParams)
-	if err != nil {
-		return false, err
-	}
-	defer sqlDB.Close()
-
 	var exist bool
-	err = sqlDB.QueryRow(POSTGRES_TABLE_EXISTENCE_QUERY, "public", "counter").
+	err := m.database.QueryRow(POSTGRES_TABLE_EXISTENCE_QUERY, "public", "counter").
 		Scan(&exist)
 
 	return exist, err
 }
 
 func (m *CounterDataPostgresql) createTable() error {
-	sqlDB, err := sql.Open(POSTGRES_DRIVER_NAME, m.extraParams)
-	if err != nil {
-		return err
-	}
-	defer sqlDB.Close()
-
-	_, err = sqlDB.Exec(POSTGRES_TABLE_CREATION_STATEMENT)
+	_, err := m.database.Exec(POSTGRES_TABLE_CREATION_STATEMENT)
 
 	return err
 }

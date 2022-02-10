@@ -4,8 +4,14 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"os"
+	"os/signal"
+	"syscall"
+	"time"
 
-	"github.com/ericogr/go-counter-online/routes"
+	"github.com/ericogr/go-counter-online/rest"
+	"github.com/ericogr/go-counter-online/services"
+	"github.com/ericogr/go-counter-online/storage"
 	"github.com/gorilla/mux"
 	"github.com/spf13/viper"
 )
@@ -50,20 +56,61 @@ func init() {
 	}
 }
 
-func main() {
-	fmt.Printf("Listening on port %d\n", viper.GetInt("Port"))
-	doRoute()
+func waitForShutdown(dataStorage storage.CounterData) {
+	s := make(chan os.Signal, 1)
+	signal.Notify(s, syscall.SIGINT, syscall.SIGTERM, syscall.SIGHUP)
+	signalx := <-s
+
+	fmt.Println("Shutting down:", signalx)
+
+	err := dataStorage.Terminate()
+	if err != nil {
+		fmt.Printf("error while terminating database: %s", err)
+	}
+}
+
+func getStorageInstance() (storage.CounterData, error) {
+	return storage.GetStoreInstance(
+		viper.GetString("Database"),
+		viper.GetString("DatabaseConfiguration"),
+	)
 }
 
 func doRoute() {
-	r := mux.NewRouter()
-	r.HandleFunc(PATH_ROOT, routes.DoNothingRoute)
-	r.HandleFunc(PATH_COUNT_GET, routes.GetCountRoute).Methods("GET")
-	r.HandleFunc(PATH_COUNT_POST, routes.CreateCountRoute).Methods("POST")
-	log.Fatal(
-		http.ListenAndServe(
-			fmt.Sprintf(":%d", viper.GetInt("Port")),
-			r,
-		),
-	)
+	router := mux.NewRouter()
+	storageInstance, err := getStorageInstance()
+	if err != nil {
+		panic(err)
+	}
+
+	countRest := rest.CounterRest{
+		CounterService: services.CounterService{
+			CounterData: storageInstance,
+		},
+	}
+
+	router.HandleFunc(PATH_ROOT, countRest.DoNothing)
+	router.HandleFunc(PATH_COUNT_GET, countRest.GetCount).Methods("GET")
+	router.HandleFunc(PATH_COUNT_POST, countRest.CreateCount).Methods("POST")
+
+	addr := fmt.Sprintf(":%d", viper.GetInt("Port"))
+	srv := &http.Server{
+		Handler:      router,
+		Addr:         addr,
+		WriteTimeout: 15 * time.Second,
+		ReadTimeout:  15 * time.Second,
+	}
+
+	go func() {
+		if err := srv.ListenAndServe(); err != http.ErrServerClosed {
+			log.Fatalf("ListenAndServe: %v", err)
+		}
+	}()
+
+	waitForShutdown(storageInstance)
+}
+
+func main() {
+	fmt.Printf("Listening on port %d\n", viper.GetInt("Port"))
+	doRoute()
 }

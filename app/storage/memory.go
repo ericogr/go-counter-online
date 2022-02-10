@@ -2,11 +2,9 @@ package storage
 
 import (
 	"fmt"
-
-	"github.com/ericogr/go-counter-online/counter"
 )
 
-var counterMemoryDatabase = make(map[string]counter.Counter)
+var counterMemoryDatabase = make(map[string]Counter)
 
 type CounterDataInMemory struct {
 }
@@ -15,15 +13,23 @@ func (m *CounterDataInMemory) DatastoreName() string {
 	return "memory"
 }
 
-func (m *CounterDataInMemory) Init(params string) (counter.CounterData, error) {
+func (m *CounterDataInMemory) Init(params string) (CounterData, error) {
 	return m, nil
 }
 
-func (m *CounterDataInMemory) Exists(uuid string) (counter.Counter, error) {
-	return counterMemoryDatabase[uuid], nil
+func (m *CounterDataInMemory) Terminate() error {
+	return nil
 }
 
-func (m *CounterDataInMemory) Create(counter counter.Counter) (counter.Counter, error) {
+func (m *CounterDataInMemory) Get(uuid string) (Counter, error) {
+	if value, ok := counterMemoryDatabase[uuid]; ok {
+		return value, nil
+	}
+
+	return Counter{}, fmt.Errorf("counter %s does not exist", uuid)
+}
+
+func (m *CounterDataInMemory) Create(counter Counter) (Counter, error) {
 	if counter, ok := counterMemoryDatabase[counter.UUID]; ok {
 		return counter, fmt.Errorf("counter %s already exists: %s", counter.UUID, counter.Name)
 	}
@@ -32,12 +38,15 @@ func (m *CounterDataInMemory) Create(counter counter.Counter) (counter.Counter, 
 	return counter, nil
 }
 
-func (m *CounterDataInMemory) Increment(userCounter counter.Counter) (counter.Counter, error) {
-	if counter, ok := counterMemoryDatabase[userCounter.UUID]; ok {
-		counter.Count++
-		counterMemoryDatabase[userCounter.UUID] = counter
+func (m *CounterDataInMemory) Update(counter Counter) (Counter, error) {
+	if dataCounter, ok := counterMemoryDatabase[counter.UUID]; ok {
+		dataCounter.Name = counter.Name
+		dataCounter.Date = counter.Date
+		dataCounter.Count = counter.Count
+		dataCounter.Date = counter.Date
+		counterMemoryDatabase[counter.UUID] = dataCounter
 		return counter, nil
 	}
 
-	return counter.Counter{}, fmt.Errorf("counter %s does not exist", userCounter.UUID)
+	return Counter{}, fmt.Errorf("counter %s does not exist", counter.UUID)
 }
