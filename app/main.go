@@ -84,7 +84,7 @@ func doRoute() {
 	}
 
 	countRest := rest.CounterRest{
-		CounterService: services.CounterService{
+		CounterService: &services.DefaultCounterService{
 			CounterData: storageInstance,
 		},
 	}

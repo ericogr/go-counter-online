@@ -13,11 +13,17 @@ type Counter struct {
 	Date  time.Time `json:"created_at"`
 }
 
-type CounterService struct {
+type CounterService interface {
+	Exists(uuid string) (Counter, error)
+	Create(counter Counter) (Counter, error)
+	Increment(counter Counter) (Counter, error)
+}
+
+type DefaultCounterService struct {
 	CounterData storage.CounterData
 }
 
-func (cs *CounterService) Exists(uuid string) (Counter, error) {
+func (cs *DefaultCounterService) Exists(uuid string) (Counter, error) {
 	data, err := cs.CounterData.Get(uuid)
 	if err != nil {
 		return Counter{}, err
@@ -31,7 +37,7 @@ func (cs *CounterService) Exists(uuid string) (Counter, error) {
 	}, nil
 }
 
-func (cs *CounterService) Create(counter Counter) (Counter, error) {
+func (cs *DefaultCounterService) Create(counter Counter) (Counter, error) {
 	storageCounter := storage.Counter{
 		UUID:  counter.UUID,
 		Name:  counter.Name,
@@ -51,7 +57,7 @@ func (cs *CounterService) Create(counter Counter) (Counter, error) {
 	}, nil
 }
 
-func (cs *CounterService) Increment(counter Counter) (Counter, error) {
+func (cs *DefaultCounterService) Increment(counter Counter) (Counter, error) {
 	dataCounter, err := cs.CounterData.Get(counter.UUID)
 	if err != nil {
 		return Counter{}, err

@@ -170,11 +170,16 @@ curl -v -XGET localhost:8080/count/AAAAAAAA-AAAA-5AAA-AAAA-AAAAAAAAAAAA
 
 **Deploy PSQL to test database**
 
-Deploy psql utility to connect to Postgres database
+Use psql utility to connect to Postgres database:
+
 ```sh
-kubectl run util -it --image=alpine -- sh
-apk --update add postgresql-client
-psql -h <database-dns-name> -U go_counter_online -d prd_go_counter_online
+#docker
+docker run -it --rm postgres psql -h <dbhost> -U go_counter_online -d go_counter_online
+```
+
+```sh
+#kubernetes
+kubectl run psql --rm -it --image=postgres -- psql -h <dbhost> -U go_counter_online -d go_counter_online
 ```
 
 ## Links
