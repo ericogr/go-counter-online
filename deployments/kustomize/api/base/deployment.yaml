@@ -25,8 +25,6 @@ spec:
           env:
             - name: COUNTER_CONFIG
               value: "/mnt/secrets-store/prd-go-counter-online-db-5xx4"
-            - name: COUNTER_DATABASE
-              value: "postgres"
             - name: COUNTER_HIDEDATABASECONFIGURATIONOUTPUT
               value: "true"
           ports:

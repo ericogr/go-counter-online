@@ -2,7 +2,7 @@
 
 Counter Online is just my learning project to experiment some technologies. Here you will find:
 
-- Backend app written in Go language
+- Backend app written in Go language (using [GO kit](http://gokit.io/))
 - Terraform to deploy infrastructure components on AWS
 - Kubernetes to manage app containers
 - GitHub Actions to CI/CD
@@ -12,35 +12,35 @@ Counter Online is just my learning project to experiment some technologies. Here
 Imagine following scenario: sellers wants to keep their product authenticity and users want to check it to get quality goods. You can provide together their product a unique identifier to be validated online. When user validate it for the first time, the counter is one. This means that no one else validated the code before and it can be considered authentic. If another manufacturer makes a copy and sell it as original, they need to give the validation code to customers. If customers tries to validate, the code can be already used or invalid.
 
 # Development state
-|#|Feature|Description|State|Comment|
-|-|-------|-----------|-----|-------|
-| 1|Documentation|Document the process and architecture|In progress|-|
-| 2|Counter App Service|The counter application|Ready|-|
-| 3|Counter App Service Build|The counter continuous integration (CI)|Ready|-|
-| 4|Counter App Service Deployment|The counter application deployment (CD)|Ready|-|
-| 5|AWS Infrastructure (Terraform)|Terraform files to create infrastructure|Ready|-|
-| 6|AWS Infrastructure (Terraform) Deployment|Terraform infrastructure pipeline (CD)|Ready|-|
-| 7|AWS Password Manager CSI Driver|CSI driver deployment|Ready|-|
-| 8|AWS Password Manager CSI Provider|CSI provider deployment|Ready|-|
-| 9|AWS Kubernetes Cluster Autoscaler|Automatically adjusts the number of nodes when needed|Ready|-|
-| 9|AWS Kubernetes Cluster Autoscaler Deployment|AWS Kubernetes Cluster Autoscaler pipeline|Ready|-|
-|10|Ingress Nginx|Kubernetes ingress deployment|Ready|-|
-|11|DNS Management|Implement DNS Management|Not started|-|
-|12|CertManager|Implement Cert Manager|Not started|-|
+|Feature|Description|State|Comment|
+|-------|-----------|-----|-------|
+|Documentation|Document the process and architecture|In progress|-|
+|Counter App Service|The counter application|Ready|-|
+|Counter App Service|Use GO kit to create services|Ready|-|
+|Counter App Service Build|The counter continuous integration (CI)|Ready|-|
+|Counter App Service Deployment|The counter application deployment (CD)|Ready|-|
+|AWS Infrastructure (Terraform)|Terraform files to create infrastructure|Ready|-|
+|AWS Infrastructure (Terraform) Deployment|Terraform infrastructure pipeline (CD)|Ready|-|
+|AWS Password Manager CSI Driver|CSI driver deployment|Ready|-|
+|AWS Password Manager CSI Provider|CSI provider deployment|Ready|-|
+|AWS Kubernetes Cluster Autoscaler|Automatically adjusts the number of nodes when needed|Ready|-|
+|AWS Kubernetes Cluster Autoscaler Deployment|AWS Kubernetes Cluster Autoscaler pipeline|Ready|-|
+|Ingress Nginx|Kubernetes ingress deployment|Ready|-|
+|DNS Management|Implement DNS Management|Not started|-|
+|CertManager|Implement Cert Manager|Not started|-|
 
 # Folders
-The project is organized as follows:
+This project is organized as follows:
 
 ![project-folder-structure](docs/images/project-folder-structure.png?raw=true)
 
 |Folder|Description|
 |:-----|:----------|
 |.github/workflows|GitHub action workflow pipelines|
-|app|App source code|
-|terraform|Terraform hcl files|
-|scripts|Miscellaneous scripts|
-|docs|Documentation and its assets folder|
-|deployments|Kubernetes Deployments folders|
+|app|App source code in GO Language|
+|terraform|Terraform HCL files to deploy infrastructure|
+|deployments|Kubernetes Deployment folders to create basic infrastructure software elements like ingress|
+|scripts|Scripts used help to prepare terraform infrastructure, creating aws user, policies, s3, etc|
 
 > **_IMPORTANT:_** In a production environment, you must use different repositories to each component (application, kubernetes deployments, terraform...)
 > 
