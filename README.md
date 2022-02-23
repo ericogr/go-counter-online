@@ -43,7 +43,19 @@ This project is organized as follows:
 |scripts|Scripts used help to prepare terraform infrastructure, creating aws user, policies, s3, etc|
 
 > **_IMPORTANT:_** In a production environment, you must use different repositories to each component (application, kubernetes deployments, terraform...)
-> 
+
+# Architecture
+## Workflow
+
+This is the use case for this project. Here we have the seller creating UUID v5 codes to be validated by the customer (maybe using qr code), as you saw in the beginning of this document.
+
+![app-flow](docs/images/app-flow.png?raw=true)
+
+## Infrastructure Architecture
+Above you will find the application architecture. I used AWS provider and terraform to deploy infrastructure components.
+
+![app-architecture](docs/images/project-architecture.png?raw=true)
+
 # How to use this repository
 I recommend you fork this repository and change it to use your own parameters. The next two sections, I'll show you what you gonna need to do.
 
@@ -57,8 +69,13 @@ These are GitHub Action variables needed by automation. Please, create these key
 |AWS_DEFAULT_REGION|Your AWS provider Region|
 |TERRAFORM_GITHUB_TOKEN|Create a GitHub [PAT](https://docs.github.com/pt/authentication/keeping-your-account-and-data-secure/creating-a-personal-access-token) (default token [doesn't work](https://github.community/t/are-there-plans-to-allow-the-actions-token-to-modify-secrets/17626)]|
 
+## AWS Credenciais and Terraform resources
+This project is using Terraform to maintain the infrastructure. You need to configure credentials, permissions and storage to maintain state. You can use the ```scripts/startup-terraform-backend-state.sh``` script to help you.
+
 ## Account configuration
 Some files have AWS account ID hardcoded. You can replace these values with your AWS account id:
+
+> **_IMPORTANT:_** Replace all accounts ids with yours: `find ./ -type f -exec sed -i 's/043934856969/100000000001/g' {} \;` where 100000000001 is your aws acccount id.
 
 Open file **go-counter-online/deployments/kustomize/common/base/service-account.yaml** and change:
 ```yaml
@@ -104,18 +121,6 @@ to
 ```yaml
 "Resource": ["arn:aws:secretsmanager:us-east-2:<your aws account id>:secret:*"]
 ```
-
-# Architecture
-## Workflow
-
-This is the use case for this project. Here we have the seller creating UUID v5 codes to be validated by the customer (maybe using qr code), as you saw in the beginning of this document.
-
-![app-flow](docs/images/app-flow.png?raw=true)
-
-## Infrastructure Architecture
-Above you will find the application architecture. I used AWS provider and terraform to deploy infrastructure components.
-
-![app-architecture](docs/images/project-architecture.png?raw=true)
 
 # Miscellaneous
 
