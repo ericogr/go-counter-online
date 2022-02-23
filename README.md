@@ -73,9 +73,9 @@ These are GitHub Action variables needed by automation. Please, create these key
 This project is using Terraform to maintain the infrastructure. You need to configure credentials, permissions and storage to maintain state. You can use the ```scripts/startup-terraform-backend-state.sh``` script to help you.
 
 ## Account configuration
-Some files have AWS account ID hardcoded. You can replace these values with your AWS account id:
+Some files have AWS account ID hardcoded. You can replace these values with your AWS account id using `find ./ -type f -exec sed -i 's/043934856969/100000000001/g' {} \;` where 100000000001 is your aws acccount id.
 
-> **_IMPORTANT:_** Replace all accounts ids with yours: `find ./ -type f -exec sed -i 's/043934856969/100000000001/g' {} \;` where 100000000001 is your aws acccount id.
+### If you want to change every file manually or check each configuration, here are the list
 
 Open file **go-counter-online/deployments/kustomize/common/base/service-account.yaml** and change:
 ```yaml
