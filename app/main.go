@@ -11,26 +11,34 @@ import (
 	"github.com/go-kit/kit/log"
 	kitprometheus "github.com/go-kit/kit/metrics/prometheus"
 	httptransport "github.com/go-kit/kit/transport/http"
+	"github.com/go-kit/log/level"
 	"github.com/gorilla/mux"
 	stdprometheus "github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
+	"github.com/spf13/pflag"
 	"github.com/spf13/viper"
 )
 
 var (
-	PATH_ROOT        = "/"
-	PATH_COUNT_POST  = "/count/{uuid:[0-9A-F]{8}-[0-9A-F]{4}-[5][0-9A-F]{3}-[89AB][0-9A-F]{3}-[0-9A-F]{12}}/{name:[a-zA-Z][a-zA-Z0-9]{0,15}}"
-	PATH_COUNT_GET   = "/count/{uuid:[0-9A-F]{8}-[0-9A-F]{4}-[5][0-9A-F]{3}-[89AB][0-9A-F]{3}-[0-9A-F]{12}}"
-	PATH_METRICS_GET = "/metrics"
+	logger                      log.Logger
+	PATH_ROOT                   = "/"
+	PATH_COUNT_POST             = "/count/{uuid:[0-9A-F]{8}-[0-9A-F]{4}-[5][0-9A-F]{3}-[89AB][0-9A-F]{3}-[0-9A-F]{12}}/{name:[a-zA-Z][a-zA-Z0-9]{0,15}}"
+	PATH_COUNT_GET              = "/count/{uuid:[0-9A-F]{8}-[0-9A-F]{4}-[5][0-9A-F]{3}-[89AB][0-9A-F]{3}-[0-9A-F]{12}}"
+	PATH_METRICS_GET            = "/metrics"
+	FLAG_PORT                   = "port"
+	FLAG_DEBUG                  = "debug"
+	FLAG_DATABASE_CONFIGURATION = "databaseConfiguration"
 )
 
 func init() {
+	pflag.Int(FLAG_PORT, 8080, "Port to listen")
+	pflag.String(FLAG_DATABASE_CONFIGURATION, "", "Database configuration or connection string")
+	pflag.String(FLAG_DEBUG, "info", "Enable debug mode")
+	pflag.Parse()
+	viper.BindPFlags(pflag.CommandLine)
+
 	viper.AutomaticEnv()
 	viper.SetEnvPrefix("COUNTER")
-
-	viper.SetDefault("Port", 8080)
-	viper.SetDefault("DatabaseConfiguration", "")
-	viper.SetDefault("HideDatabaseConfigurationOutput", false)
 
 	if viper.IsSet("Config") {
 		viper.SetConfigFile(viper.GetString("Config"))
@@ -46,18 +54,23 @@ func init() {
 		panic(fmt.Errorf("fatal error config file: %w", err))
 	}
 
-	fmt.Println("Configuration:")
-	fmt.Printf("- port: %d\n", viper.GetInt("Port"))
-	fmt.Printf("- hide-database-configuration-output: %t\n", viper.GetBool("HideDatabaseConfigurationOutput"))
-	if !viper.GetBool("HideDatabaseConfigurationOutput") {
-		fmt.Printf("- database-configuration: %v\n", viper.GetString("DatabaseConfiguration"))
-	}
+	logger = log.NewLogfmtLogger(os.Stderr)
+	logger = level.NewFilter(
+		logger,
+		parseLogOption(viper.GetString(FLAG_DEBUG)),
+	)
+	logger = log.With(
+		logger,
+		"ts",
+		log.DefaultTimestampUTC,
+		"caller",
+		log.DefaultCaller,
+	)
+
+	printSettings()
 }
 
 func main() {
-	var logger log.Logger = log.NewLogfmtLogger(os.Stderr)
-	logger = log.With(logger, "listen", viper.GetInt("Port"), "caller", log.DefaultCaller)
-
 	fieldsKeys := []string{"method", "error"}
 	requestCount := kitprometheus.NewCounterFrom(stdprometheus.CounterOpts{
 		Subsystem: "counter_service",
@@ -70,11 +83,11 @@ func main() {
 		Help:      "Total duration of requests in microseconds.",
 	}, fieldsKeys)
 
-	var databaseParams string = viper.GetString("DatabaseConfiguration")
+	var databaseParams string = viper.GetString(FLAG_DATABASE_CONFIGURATION)
 	var svc CounterService = &PostgresCounterService{
 		DatabaseParams: databaseParams,
 	}
-	svc = DefaultLoggingMiddleware(logger)(svc)
+	svc = DefaultLoggingMiddleware(logger, viper.GetBool(FLAG_DEBUG))(svc)
 	svc = DefaultInstrumentingMiddleware(requestCount, requestLatency)(svc)
 	err := svc.Init()
 	if err != nil {
@@ -107,7 +120,7 @@ func main() {
 	router.Handle(PATH_METRICS_GET, promhttp.Handler()).Methods("GET")
 	router.HandleFunc(PATH_ROOT, rootHandler).Methods("GET")
 
-	addr := fmt.Sprintf(":%d", viper.GetInt("Port"))
+	addr := fmt.Sprintf(":%d", viper.GetInt(FLAG_PORT))
 	srv := &http.Server{
 		Handler:      router,
 		Addr:         addr,
@@ -117,7 +130,7 @@ func main() {
 
 	go func() {
 		if err := srv.ListenAndServe(); err != http.ErrServerClosed {
-			logger.Log("err", err)
+			level.Error(logger).Log("error", err)
 		}
 	}()
 
@@ -129,12 +142,33 @@ func waitForShutdown(svc CounterService) {
 	signal.Notify(s, syscall.SIGINT, syscall.SIGTERM, syscall.SIGHUP)
 	signalx := <-s
 
-	fmt.Println("Shutting down:", signalx)
+	logger.Log("Shutting down:", signalx)
 
 	err := svc.Terminate()
 	if err != nil {
-		fmt.Printf("error while terminating service: %s", err)
-	} else {
-		fmt.Println("service terminated with success")
+		level.Error(logger).Log("error", fmt.Sprintf("error while terminating service: %s", err))
+	}
+}
+
+func printSettings() {
+	for k, v := range viper.AllSettings() {
+		level.Debug(logger).Log("setting", k, "value", v)
+	}
+}
+
+func parseLogOption(logLevel string) level.Option {
+	switch logLevel {
+	case "debug":
+		return level.AllowDebug()
+	case "info":
+		return level.AllowInfo()
+	case "warn":
+		return level.AllowWarn()
+	case "error":
+		return level.AllowError()
+	case "fatal":
+		return level.AllowError()
+	default:
+		return level.AllowInfo()
 	}
 }

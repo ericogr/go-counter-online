@@ -4,9 +4,9 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
-	"log"
 	"time"
 
+	"github.com/go-kit/log/level"
 	_ "github.com/lib/pq"
 )
 
@@ -53,7 +53,7 @@ type PostgresCounterService struct {
 }
 
 func (cs *PostgresCounterService) Init() error {
-	log.Println("Initializing postgres...")
+	level.Info(logger).Log("msg", "Initializing postgres...")
 
 	var err error
 	cs.database, err = sql.Open(POSTGRES_DRIVER_NAME, cs.DatabaseParams)
@@ -67,14 +67,14 @@ func (cs *PostgresCounterService) Init() error {
 	}
 
 	if !tableExist {
-		log.Println("Table doesn't exist, creating...")
+		level.Info(logger).Log("msg", "Table doesn't exist, creating...")
 		err := cs.createTable(context.Background())
 		if err != nil {
 			return err
 		}
-		log.Println("Table created successfully")
+		level.Info(logger).Log("msg", "Table created successfully")
 	} else {
-		log.Println("Table already exists")
+		level.Info(logger).Log("msg", "Table already exists")
 	}
 
 	return nil

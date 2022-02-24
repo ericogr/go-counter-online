@@ -1,4 +1,4 @@
 {
-    "port": 8081,
+    "port": "8080",
     "databaseConfiguration": "host=localhost dbname=go_counter_online user=go_counter_online password=go_counter_online_password connect_timeout=5 sslmode=disable"
 }

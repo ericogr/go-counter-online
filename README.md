@@ -137,6 +137,21 @@ aws eks update-kubeconfig --name prd-go-counter-online-eks
 docker build -t go-counter-online -f app/Dockerfile app
 ```
 
+**Command line to run Counter Online local**
+
+```sh
+# - postgresql database is needed
+# - check app/config.json to change parameters as your own
+# - you can give parameters using command line or environment
+#   ex:
+#   go run . --port 8081
+#   or
+#   export COUNTER_PORT=8081
+#   go run .
+cd app
+go run .
+```
+
 **Add users and roles to access the cluster:**
 
 ```sh
@@ -151,16 +166,6 @@ data:
       username: test
       groups:
       - system:masters
-```
-
-**Command line to run Counter Online local**
-
-```sh
-# memory database
-go run . -port=8080 -datastore=memory
-
-# or postgresql database
-go run . -port=8080 -datastore=postgresql -extra-params='host=localhost dbname=go_counter_online user=go_counter_online password=go_counter_online_password sslmode=disable' -hide-extra-params=true
 ```
 
 **Curl commands to test Counter Online API services**
