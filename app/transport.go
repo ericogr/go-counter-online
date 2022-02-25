@@ -29,16 +29,13 @@ func makeCountCreateEndpoint(svc CounterService) endpoint.Endpoint {
 	return func(_ context.Context, request interface{}) (interface{}, error) {
 		req := request.(countCreateRequest)
 		counter, err := svc.Create(req.Context, req.UUID, req.Name)
-		if err != nil {
-			return createResponse{
-				Counter: counter,
-				Error:   err.Error(),
-			}, nil
-		}
-		return createResponse{
+		response := createResponse{
 			Counter: counter,
-			Error:   "",
-		}, nil
+		}
+		if err != nil {
+			response.Error = err.Error()
+		}
+		return response, err
 	}
 }
 
@@ -46,16 +43,13 @@ func makeCountIncrementEndpoint(svc CounterService) endpoint.Endpoint {
 	return func(_ context.Context, request interface{}) (interface{}, error) {
 		req := request.(countIncrementRequest)
 		counter, err := svc.Increment(req.Context, req.UUID)
-		if err != nil {
-			return createResponse{
-				Counter: counter,
-				Error:   err.Error(),
-			}, nil
-		}
-		return createResponse{
+		response := createResponse{
 			Counter: counter,
-			Error:   "",
-		}, nil
+		}
+		if err != nil {
+			response.Error = err.Error()
+		}
+		return response, err
 	}
 }
 

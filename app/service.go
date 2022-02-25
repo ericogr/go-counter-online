@@ -81,7 +81,7 @@ func (cs *PostgresCounterService) Init() error {
 }
 
 func (cs *PostgresCounterService) Create(ctx context.Context, uuid string, name string) (Counter, error) {
-	ctx, cancel := context.WithTimeout(ctx, time.Second*10)
+	ctx, cancel := createContextWithTimeout(ctx, 10)
 	defer cancel()
 
 	_, err := cs.database.ExecContext(ctx, POSTGRES_INSERT_COUNTER_STATEMENT,
